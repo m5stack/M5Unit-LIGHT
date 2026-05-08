@@ -1,3 +1,5 @@
+---
+Language:        Cpp
 BasedOnStyle:  Google
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
@@ -162,3 +164,4 @@ StatementMacros:
 TabWidth:        4
 UseCRLF:         false
 UseTab:          Never
+...

@@ -31,31 +31,23 @@
 *.out
 *.app
 
-# MacOS desktop metadata files
-.DS_Store
-
-# Build files
-build/
-cmake-build-*/
-managed_components/
+# Doxygen
+docs/html/
 
 # PlatformIO
 .pio/
 
-# VSCode
+# IDE
 .vscode/
-.cache/
 
-# Python virtual environment
-.venv/
+# macOS
+.DS_Store
 
-# Debug / Release files
-Debug/
-debug/
-Release/
-release/
-out/
-bin/
-obj/
+# Temporary
+tmp/
 
-*.code-workspace
+# Secrets
+.env*
+*.pem
+*.key
+*.cert
