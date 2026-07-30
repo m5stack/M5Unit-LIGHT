@@ -17,7 +17,7 @@ Unit Light is a light intensity detection sensor. It integrates a photoresistor 
 ## Related Link
 See also examples using conventional methods here.
 
-- [Unit DLight & Datasheet](https://docs.m5stack.com/en/unit/dlight)
+- [Unit DLight & Datasheet](https://docs.m5stack.com/en/unit/DLight%20Unit)
 - [Hat DLight & Datasheet](https://docs.m5stack.com/en/hat/hat_dlight)
 - [Unit Light & Datasheet](https://docs.m5stack.com/en/unit/LIGHT)
 
@@ -42,7 +42,7 @@ See also [M5Unit-HUB](https://github.com/m5stack/M5Unit-HUB)
 ## Examples
 See also [examples/UnitUnified](examples/UnitUnified)
 
-### For ArduinoIDE settings
+### For Arduino IDE settings
 You must choose a define symbol for the unit you will use.
 (Uncomment the corresponding #define in the example, or specify it with compile options.)
 
@@ -73,5 +73,4 @@ If you want to output Git commit hashes to html, do it for the git cloned folder
 
 ### Required
 - [Doxygen](https://www.doxygen.nl/)
-- [pcregrep](https://formulae.brew.sh/formula/pcre2)
 - [Git](https://git-scm.com/) (Output commit hash to html)
