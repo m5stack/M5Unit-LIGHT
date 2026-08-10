@@ -101,7 +101,7 @@ public:
     ///@{
     //! @brief Gets the configuration
     //! @return Current configuration
-    inline config_t config()
+    inline config_t config() const
     {
         return _cfg;
     }
@@ -179,7 +179,7 @@ public:
       @param resolution Resolution to use (default: High)
       @param mtreg MTreg value (default: 69)
       @return True if successful
-      @warning Blocks until the measurement completes (up to 180 ms * mtreg/69)
+      @warning Blocks until the measurement completes (up to 24 ms (Low) or 180 ms (High/High2), scaled by mtreg/69)
      */
     bool measureSingleShot(bh1750fvi::Data& data, const bh1750fvi::Resolution resolution = bh1750fvi::Resolution::High,
                            const uint8_t mtreg = bh1750fvi::MTREG_DEFAULT);
@@ -197,7 +197,7 @@ public:
 
     /*!
       @brief Write MTreg as sensitivity factor (0.45..3.68)
-      @param factor Sensitivity factor (default 1.0 corresponds to mtreg=69)
+      @param factor Sensitivity factor (1.0 corresponds to mtreg=69)
       @return True if successful
      */
     bool writeSensitivityFactor(const float factor);
