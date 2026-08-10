@@ -16,40 +16,12 @@
 #include <M5UnitComponent.hpp>
 #include <m5_utility/stl/extension.hpp>
 #include <m5_utility/container/circular_buffer.hpp>
+#include "unit_Light_data.hpp"  // Data (with inline normalized())
 #include <cstdint>
 #include <limits>
 
 namespace m5 {
 namespace unit {
-
-/*!
-  @namespace light
-  @brief For UnitLight (U021)
- */
-namespace light {
-
-/*!
-  @struct Data
-  @brief Measurement data group
- */
-struct Data {
-    uint16_t analog_raw{};  //!< Raw ADC value from the photoresistor path
-    bool digital{};         //!< Comparator threshold output (active level is board-specific; verify with calibration)
-    uint16_t dark{0};       //!< ADC reading captured when the sensor was covered (dark reference)
-    uint16_t bright{4095};  //!< ADC reading captured when the sensor was lit (bright reference)
-
-    /*!
-      @brief Normalized brightness in 0..100 (%), where 0% = dark reference and 100% = bright reference
-      @return NaN only when dark == bright (cannot form a range)
-      @note dark and bright are stored as the raw ADC values captured during calibration; their
-            magnitudes do not imply polarity. On U021 the photoresistor circuit polarity is
-            board-specific (some revisions yield higher ADC in the dark, others in the light)
-            — normalized() handles either polarity and always maps dark to 0% and bright to 100%.
-     */
-    float normalized() const;
-};
-
-}  // namespace light
 
 /*!
   @class m5::unit::UnitLight
@@ -99,7 +71,7 @@ public:
     ///@{
     //! @brief Gets the configuration
     //! @return Current configuration
-    inline config_t config()
+    inline config_t config() const
     {
         return _cfg;
     }
@@ -115,12 +87,17 @@ public:
     ///@{
     //! @brief Latest analog raw value
     //! @return Raw ADC value (0 if no data)
+    //! @note Raw ADC is chip-generation dependent: ESP32 classic saturates near 4095 (non-linear above ~2.45 V),
+    //!       while ESP32-C6/H2/S3/P4 read linearly up to 3.3 V (so dark values may not reach 4095 on those chips).
+    //!       Use normalized() with calibrateDark()/calibrateBright() for portable 0-100% readings.
+    //!       See: https://developer.espressif.com/blog/2025/08/adc-performance/
     inline uint16_t analog() const
     {
         return !empty() ? latest().analog_raw : 0;
     }
     //! @brief Latest digital threshold output
     //! @return Comparator output (false if no data)
+    //! @note Comparator output polarity depends on board revision / trimpot setting; do not assume true == bright.
     inline bool digital() const
     {
         return !empty() ? latest().digital : false;
@@ -168,16 +145,20 @@ public:
     ///@name Calibration
     ///@{
     /*! @brief Record the current analog reading as the dark reference
-        @return True if successful */
+        @return True if successful
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     bool calibrateDark();
     /*! @brief Record the current analog reading as the bright reference
-        @return True if successful */
+        @return True if successful
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     bool calibrateBright();
     /*! @brief Set dark/bright references explicitly
         @param dark Dark reference (ADC value measured under covered sensor)
-        @param bright Bright reference (ADC value measured under bright exposure) */
+        @param bright Bright reference (ADC value measured under bright exposure)
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     void setCalibration(const uint16_t dark, const uint16_t bright);
-    /*! @brief Reset calibration (dark=0, bright=4095) */
+    /*! @brief Reset calibration (dark=0, bright=4095)
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     void resetCalibration();
 
     //! @brief Current dark reference

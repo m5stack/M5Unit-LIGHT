@@ -16,63 +16,14 @@
 #include <M5UnitComponent.hpp>
 #include <m5_utility/stl/extension.hpp>
 #include <m5_utility/container/circular_buffer.hpp>
+#include "unit_BH1750FVI_data.hpp"  // Mode, Resolution, MTREG_* constants, Data (with inline lux())
 #include <cstdint>
 #include <limits>
 
 namespace m5 {
 namespace unit {
 
-/*!
-  @namespace bh1750fvi
-  @brief For BH1750FVI
- */
 namespace bh1750fvi {
-
-/*!
-  @enum Mode
-  @brief Measurement mode
- */
-enum class Mode : uint8_t {
-    Continuous,  //!< Continuous measurement. Sensor updates the data register periodically.
-    OneTime,     //!< One-time measurement. Sensor enters Power Down after the conversion completes.
-};
-
-/*!
-  @enum Resolution
-  @brief Resolution of the measurement
-  @note High2 uses 0.5 lx resolution; raw is interpreted with an extra fractional bit.
- */
-enum class Resolution : uint8_t {
-    Low,    //!< 4 lx resolution, ~16 ms (max 24 ms) conversion time
-    High,   //!< 1 lx resolution, ~120 ms (max 180 ms) conversion time
-    High2,  //!< 0.5 lx resolution, ~120 ms (max 180 ms) conversion time
-};
-
-//! @brief Minimum value of MTREG (sensitivity register)
-constexpr uint8_t MTREG_MIN{31};
-//! @brief Maximum value of MTREG
-constexpr uint8_t MTREG_MAX{254};
-//! @brief Default value of MTREG
-constexpr uint8_t MTREG_DEFAULT{69};
-
-//! @brief Minimum sensitivity factor (MTREG_MIN / MTREG_DEFAULT)
-constexpr float SENSITIVITY_FACTOR_MIN{0.45f};
-//! @brief Maximum sensitivity factor (MTREG_MAX / MTREG_DEFAULT)
-constexpr float SENSITIVITY_FACTOR_MAX{3.68f};
-
-/*!
-  @struct Data
-  @brief Measurement data group
- */
-struct Data {
-    uint16_t raw{};                           //!< Raw 16-bit ADC value (MSB first)
-    uint8_t mtreg{MTREG_DEFAULT};             //!< MTreg value in effect at the time of measurement
-    Resolution resolution{Resolution::High};  //!< Resolution in effect at the time of measurement
-    //! @brief Illuminance in lx
-    //! @details lux = raw / 1.2 * (69 / mtreg) [/ 2 if High2]
-    //! @return Illuminance in lx (NaN if mtreg == 0)
-    float lux() const;
-};
 
 ///@cond
 namespace command {
@@ -150,7 +101,7 @@ public:
     ///@{
     //! @brief Gets the configuration
     //! @return Current configuration
-    inline config_t config()
+    inline config_t config() const
     {
         return _cfg;
     }
@@ -228,7 +179,7 @@ public:
       @param resolution Resolution to use (default: High)
       @param mtreg MTreg value (default: 69)
       @return True if successful
-      @warning Blocks until the measurement completes (up to 180 ms * mtreg/69)
+      @warning Blocks until the measurement completes (up to 24 ms (Low) or 180 ms (High/High2), scaled by mtreg/69)
      */
     bool measureSingleShot(bh1750fvi::Data& data, const bh1750fvi::Resolution resolution = bh1750fvi::Resolution::High,
                            const uint8_t mtreg = bh1750fvi::MTREG_DEFAULT);
@@ -246,7 +197,7 @@ public:
 
     /*!
       @brief Write MTreg as sensitivity factor (0.45..3.68)
-      @param factor Sensitivity factor (default 1.0 corresponds to mtreg=69)
+      @param factor Sensitivity factor (1.0 corresponds to mtreg=69)
       @return True if successful
      */
     bool writeSensitivityFactor(const float factor);

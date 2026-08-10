@@ -12,6 +12,7 @@
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <M5UnitUnifiedLIGHT.h>
+#include <wiring/m5_unit_unified_wiring.hpp>  // Board-aware connection helpers (include last)
 
 namespace {
 auto& lcd = M5.Display;
@@ -22,25 +23,6 @@ m5::unit::UnitLight unit;
 
 constexpr uint32_t DRAW_INTERVAL_MS{200};
 uint32_t last_draw_ms{0};
-
-struct IoPins {
-    int rx;
-    int tx;
-};
-
-IoPins get_gpio_pins(const m5::board_t board)
-{
-    // Port.B on M5Core family (analog=in, digital=out on U021 layout)
-    auto rx{M5.getPin(m5::pin_name_t::port_b_in)};
-    auto tx{M5.getPin(m5::pin_name_t::port_b_out)};
-    if (rx >= 0 && tx >= 0) {
-        return {rx, tx};
-    }
-    // Fallback to Port.A (use SCL as analog input, SDA as digital input on Grove).
-    rx = M5.getPin(m5::pin_name_t::port_a_scl);
-    tx = M5.getPin(m5::pin_name_t::port_a_sda);
-    return {rx, tx};
-}
 
 void draw_status()
 {
@@ -91,31 +73,17 @@ void draw_status()
 
 void setup()
 {
-    auto m5cfg{M5.config()};
-    M5.begin(m5cfg);
+    M5.begin();
     M5.setTouchButtonHeightByRatio(100);
 
     if (lcd.height() > lcd.width()) {
         lcd.setRotation(1);
     }
 
-    const auto board{M5.getBoard()};
-    const auto pins{get_gpio_pins(board)};
-    M5_LOGI("UnitLight pins: RX=%d (analog) TX=%d (digital)", pins.rx, pins.tx);
-    if (pins.rx < 0 || pins.tx < 0) {
-        M5_LOGE("No GPIO pins available for this board (%u)", static_cast<unsigned>(board));
-        lcd.fillScreen(TFT_RED);
-        while (true) {
-            m5::utility::delay(10000);
-        }
-    }
-
-    if (!Units.add(unit, pins.rx, pins.tx) || !Units.begin()) {
+    // U021 uses both analog input (rx) and digital comparator output (tx); PortB preferred, PortA fallback.
+    if (!m5::unit::wiring::addGPIO(Units, unit) || !Units.begin()) {
         M5_LOGE("Failed to begin");
-        lcd.fillScreen(TFT_RED);
-        while (true) {
-            m5::utility::delay(10000);
-        }
+        m5::unit::wiring::failStop();
     }
 
     // Prepare off-screen canvas: 1-bit depth, no PSRAM — keeps flicker and memory footprint low.

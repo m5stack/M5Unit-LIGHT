@@ -26,11 +26,12 @@ constexpr uint32_t BASE_MS_HIGH{180};
 constexpr uint8_t FIRST_TRANSACTION_RETRIES{3};
 constexpr uint32_t FIRST_TRANSACTION_RETRY_DELAY_MS{100};
 
-// Small guard delay inserted between consecutive opcode writes during begin().
+// Guard delay applied inside write_opcode() after every successful opcode write.
 // The BH1750 datasheet requires a STOP between opcodes (which we already emit) but
 // the chip also needs a few ms of settle time before it will honor the next opcode —
 // without this, the Continuous-mode opcode can be absorbed as a One-Time command
-// and the chip returns the same reading forever.
+// and the chip returns the same reading forever. Keeping the delay inside write_opcode()
+// means every caller is safe by construction; no site needs to remember to add it.
 constexpr uint32_t OPCODE_GUARD_DELAY_MS{5};
 
 }  // namespace
@@ -38,24 +39,8 @@ constexpr uint32_t OPCODE_GUARD_DELAY_MS{5};
 namespace m5 {
 namespace unit {
 
-namespace bh1750fvi {
-
-float Data::lux() const
-{
-    // lux = raw / 1.2 * (69 / mtreg) [ / 2 if High2 ]
-    if (mtreg == 0) {
-        return std::numeric_limits<float>::quiet_NaN();
-    }
-    const float base{static_cast<float>(raw) / 1.2f};
-    const float scale{static_cast<float>(MTREG_DEFAULT) / static_cast<float>(mtreg)};
-    float v{base * scale};
-    if (resolution == Resolution::High2) {
-        v *= 0.5f;
-    }
-    return v;
-}
-
-}  // namespace bh1750fvi
+// Data::lux() is defined inline in unit_BH1750FVI_data.hpp so native (SDL) formula tests
+// can link without a driver .cpp.
 
 // class UnitBH1750FVI
 const char UnitBH1750FVI::name[] = "UnitBH1750FVI";
@@ -90,13 +75,11 @@ bool UnitBH1750FVI::begin()
         M5_LIB_LOGE("Failed to power on after retries");
         return false;
     }
-    m5::utility::delay(OPCODE_GUARD_DELAY_MS);
 
     if (!softReset()) {
         M5_LIB_LOGE("Failed to reset");
         return false;
     }
-    m5::utility::delay(OPCODE_GUARD_DELAY_MS);
 
     if (_cfg.mtreg < MTREG_MIN || _cfg.mtreg > MTREG_MAX) {
         M5_LIB_LOGE("Invalid mtreg %u", _cfg.mtreg);
@@ -109,7 +92,6 @@ bool UnitBH1750FVI::begin()
             M5_LIB_LOGE("Failed to write MTreg");
             return false;
         }
-        m5::utility::delay(OPCODE_GUARD_DELAY_MS);
     }
     _mtreg      = _cfg.mtreg;
     _resolution = _cfg.resolution;
@@ -122,7 +104,7 @@ void UnitBH1750FVI::update(const bool force)
     _updated = false;
     if (inPeriodic()) {
         elapsed_time_t at{m5::utility::millis()};
-        if (force || !_latest || at >= _latest + _interval) {
+        if (force || !_latest || (at - _latest) >= _interval) {
             bh1750fvi::Data d{};
             if (read_measurement(d)) {
                 _updated = true;
@@ -179,16 +161,17 @@ bool UnitBH1750FVI::writeMTreg(const uint8_t mtreg)
     if (!write_mtreg_opcodes(mtreg)) {
         return false;
     }
+    // write_mtreg_opcodes() succeeded → the chip has the new MTreg. Commit the cache
+    // now so subsequent reads label data with the value actually programmed on-chip,
+    // even if the mode re-send below fails.
+    _mtreg = mtreg;
 
     if (inPeriodic()) {
-        // Re-send the current mode opcode so the sensor picks up the new MTreg
+        // Re-send the current mode opcode so the sensor triggers a fresh measurement
+        // using the new MTreg.
         if (!write_opcode(opcode_for(Mode::Continuous, _resolution))) {
             return false;
         }
-    }
-    // Commit cache only after all opcode writes succeed.
-    _mtreg = mtreg;
-    if (inPeriodic()) {
         apply_interval(_resolution, _mtreg);
         _latest = m5::utility::millis();
     }
@@ -215,7 +198,13 @@ bool UnitBH1750FVI::powerOn()
 
 bool UnitBH1750FVI::powerDown()
 {
-    return write_opcode(POWER_DOWN);
+    if (!write_opcode(POWER_DOWN)) {
+        return false;
+    }
+    // Also clear _periodic so subsequent update() doesn't read stale data
+    // from a chip that's asleep. (Equivalent to stop_periodic_measurement() side effect.)
+    _periodic = false;
+    return true;
 }
 
 bool UnitBH1750FVI::softReset()
@@ -243,7 +232,6 @@ bool UnitBH1750FVI::start_periodic_measurement(const bh1750fvi::Resolution resol
     if (!powerOn()) {
         return false;
     }
-    m5::utility::delay(OPCODE_GUARD_DELAY_MS);
 
     if (mtreg != _mtreg) {
         if (!write_mtreg_opcodes(mtreg)) {
@@ -290,22 +278,27 @@ bool UnitBH1750FVI::read_measurement(bh1750fvi::Data& data)
 
 bool UnitBH1750FVI::write_opcode(const uint8_t opcode)
 {
-    // BH1750 accepts exactly one opcode per I2C transaction (with STOP).
+    // BH1750 accepts exactly one opcode per I2C transaction (with STOP), followed by a
+    // short guard delay so the chip settles before the next opcode. See OPCODE_GUARD_DELAY_MS.
     uint8_t op{opcode};
-    return writeWithTransaction(&op, 1) == m5::hal::error::error_t::OK;
+    if (writeWithTransaction(&op, 1) != m5::hal::error::error_t::OK) {
+        return false;
+    }
+    m5::utility::delay(OPCODE_GUARD_DELAY_MS);
+    return true;
 }
 
 bool UnitBH1750FVI::write_mtreg_opcodes(const uint8_t mtreg)
 {
     // High bits: 0x40 | ((mtreg >> 5) & 0x07)
     // Low  bits: 0x60 | (mtreg & 0x1F)
-    // Each must be its own I2C transaction, separated by a short guard delay.
+    // Each must be its own I2C transaction; write_opcode() already inserts the guard delay
+    // after each transaction, so high→low is safely separated without an explicit delay here.
     const uint8_t high{static_cast<uint8_t>(CHANGE_MEASUREMENT_TIME_HIGH | ((mtreg >> 5) & 0x07))};
     const uint8_t low{static_cast<uint8_t>(CHANGE_MEASUREMENT_TIME_LOW | (mtreg & 0x1F))};
     if (!write_opcode(high)) {
         return false;
     }
-    m5::utility::delay(OPCODE_GUARD_DELAY_MS);
     return write_opcode(low);
 }
 
@@ -320,17 +313,19 @@ uint8_t UnitBH1750FVI::opcode_for(const bh1750fvi::Mode mode, const bh1750fvi::R
             case Resolution::High2:
                 return CONTINUOUS_H_RES_MODE2;
         }
-    } else {
-        switch (resolution) {
-            case Resolution::Low:
-                return ONE_TIME_L_RES_MODE;
-            case Resolution::High:
-                return ONE_TIME_H_RES_MODE;
-            case Resolution::High2:
-                return ONE_TIME_H_RES_MODE2;
-        }
+        M5_LIB_LOGE("Invalid resolution %u for Continuous mode", static_cast<unsigned>(resolution));
+        return CONTINUOUS_H_RES_MODE;
     }
-    return CONTINUOUS_H_RES_MODE;  // fallback
+    switch (resolution) {
+        case Resolution::Low:
+            return ONE_TIME_L_RES_MODE;
+        case Resolution::High:
+            return ONE_TIME_H_RES_MODE;
+        case Resolution::High2:
+            return ONE_TIME_H_RES_MODE2;
+    }
+    M5_LIB_LOGE("Invalid resolution %u for OneTime mode", static_cast<unsigned>(resolution));
+    return ONE_TIME_H_RES_MODE;
 }
 
 void UnitBH1750FVI::apply_interval(const bh1750fvi::Resolution resolution, const uint8_t mtreg)

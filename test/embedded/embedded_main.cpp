@@ -30,13 +30,7 @@ void test()
 
 void setup()
 {
-    auto m5cfg = M5.config();
-#if defined(USING_HAT_DLIGHT)
-    m5cfg.pmic_button = false;  // Disable BtnPWR (StickC family + Hat)
-#endif
-    m5cfg.internal_imu = false;  // Disable internal IMU
-    m5cfg.internal_rtc = false;  // Disable internal RTC
-    M5.begin(m5cfg);
+    M5.begin();
 
     M5_LOGI("CPP %ld", __cplusplus);
     M5_LOGI("ESP-IDF Version %d.%d.%d", (ESP_IDF_VERSION >> 16) & 0xFF, (ESP_IDF_VERSION >> 8) & 0xFF,

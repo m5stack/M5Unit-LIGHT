@@ -205,12 +205,26 @@ TEST_F(TestLight, NormalizedAfterCalibration)
 {
     SCOPED_TRACE(ustr);
 
-    unit->setCalibration(0, 4095);
+    unit->setCalibration(100, 3000);
+    EXPECT_EQ(unit->dark(), 100);
+    EXPECT_EQ(unit->bright(), 3000);
+
     auto result = collect_periodic_measurements(unit.get(), 3);
     EXPECT_FALSE(result.timed_out);
     EXPECT_EQ(result.update_count, 3U);
     EXPECT_GE(result.median(), lower_bound(result.expected_interval));
     EXPECT_LE(result.median(), upper_bound(result.expected_interval));
+
+    // Persistence: measurement cycles must not clobber calibration.
+    EXPECT_EQ(unit->dark(), 100);
+    EXPECT_EQ(unit->bright(), 3000);
+
+    // Persistence across accessor calls too.
+    (void)unit->analog();
+    (void)unit->digital();
+    (void)unit->normalized();
+    EXPECT_EQ(unit->dark(), 100);
+    EXPECT_EQ(unit->bright(), 3000);
 
     const float n{unit->normalized()};
     EXPECT_FALSE(std::isnan(n));

@@ -8,8 +8,8 @@
   Placed at test/ root so it is compiled for both embedded and native (sdl) test runs.
 */
 #include <gtest/gtest.h>
-#include <unit/unit_BH1750FVI.hpp>
-#include <unit/unit_Light.hpp>
+#include <unit/unit_BH1750FVI_data.hpp>
+#include <unit/unit_Light_data.hpp>
 #include <cmath>
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 {
     "name": "M5Unit-LIGHT",
-    "description": "Library for M5Stack UNIT LIGHT / DLight and Hat DLight Using M5UnitUnified",
+    "description": "Library for M5Stack UNIT LIGHT using M5UnitUnified",
     "keywords": "m5stack, m5unitunified, light, dlight, bh1750fvi, lm393, ambient-light, lux, i2c, gpio",
     "authors": {
         "name": "M5Stack",
@@ -11,9 +11,9 @@
         "url": "https://github.com/m5stack/M5Unit-LIGHT.git"
     },
     "dependencies": {
-        "m5stack/M5UnitUnified": ">=0.4.6"
+        "m5stack/M5UnitUnified": ">=0.5.5"
     },
-    "version": "0.0.1",
+    "version": "0.0.2",
     "frameworks": [
         "arduino"
     ],

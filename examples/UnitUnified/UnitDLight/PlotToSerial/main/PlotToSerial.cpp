@@ -12,13 +12,13 @@
   BtnA hold:  cycle resolution Low -> High -> High2 (also re-measures
               for instant feedback in either mode)
 */
+#include <driver/gpio.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <M5UnitUnifiedLIGHT.h>
-#include <Wire.h>
-#include <M5HAL.hpp>  // For NessoN1
-#include <cmath>      // std::isnan
-#include <limits>     // std::numeric_limits
+#include <wiring/m5_unit_unified_wiring.hpp>  // Board-aware connection helpers (include last)
+#include <cmath>                              // std::isnan
+#include <limits>                             // std::numeric_limits
 
 // *************************************************************
 // Choose one define symbol to match the unit you are using
@@ -153,50 +153,16 @@ void draw_status()
     canvas.pushSprite(0, 0);
 }
 
-#if defined(USING_HAT_DLIGHT)
-struct I2cPins {
-    int sda;
-    int scl;
-};
-
-I2cPins get_hat_i2c_pins(const m5::board_t board)
-{
-    switch (board) {
-        case m5::board_t::board_M5StickC:
-        case m5::board_t::board_M5StickCPlus:
-        case m5::board_t::board_M5StickCPlus2:
-            return {0, 26};
-        case m5::board_t::board_M5StickS3:
-            return {8, 0};
-        case m5::board_t::board_M5StackCoreInk:
-            return {25, 26};
-        case m5::board_t::board_ArduinoNessoN1:
-            return {6, 7};
-        default:
-            return {-1, -1};
-    }
-}
-#endif
-
 }  // namespace
 
 void setup()
 {
-    auto m5cfg{M5.config()};
-#if defined(USING_HAT_DLIGHT)
-    m5cfg.pmic_button  = false;  // Disable BtnPWR on StickC series
-    m5cfg.internal_imu = false;
-    m5cfg.internal_rtc = false;
-#endif
-
-    M5.begin(m5cfg);
+    M5.begin();
     M5.setTouchButtonHeightByRatio(100);
 
     if (lcd.height() > lcd.width()) {
         lcd.setRotation(1);
     }
-
-    auto board{M5.getBoard()};
 
     // Prioritize response speed over resolution so brief lighting changes
     // (e.g. a flash) are tracked in near-real-time.
@@ -210,61 +176,19 @@ void setup()
     }
 
 #if defined(USING_HAT_DLIGHT)
-    const auto pins{get_hat_i2c_pins(board)};
-    M5_LOGI("getHatPin: SDA:%d SCL:%d", pins.sda, pins.scl);
-    if (pins.sda < 0 || pins.scl < 0) {
-        M5_LOGE("Illegal pin number");
-        lcd.fillScreen(TFT_RED);
-        while (true) {
-            m5::utility::delay(10000);
-        }
-    }
-
-    pinMode(pins.scl, OUTPUT);
-
-    auto& wire{(board == m5::board_t::board_ArduinoNessoN1) ? Wire1 : Wire};
-    wire.end();
-    wire.begin(pins.sda, pins.scl, 400 * 1000U);
-    //    m5::utility::delay(50);  // Allow BH1750 VCC rails to settle after Wire.begin().
-    if (!Units.add(unit, wire) || !Units.begin()) {
+    // HatDLight: NessoN1 uses Wire1, other StickC-family boards use Wire.
+    // Drive SCL as OUTPUT before bus init (some boards leave it floating on reset).
+    const auto pins = m5::unit::wiring::hatI2CPins();
+    gpio_set_direction(static_cast<gpio_num_t>(pins.scl), GPIO_MODE_OUTPUT);
+    if (!m5::unit::wiring::addHatI2C(Units, unit, 400 * 1000U) || !Units.begin()) {
         M5_LOGE("Failed to begin");
-        lcd.fillScreen(TFT_RED);
-        while (true) {
-            m5::utility::delay(10000);
-        }
+        m5::unit::wiring::failStop();
     }
 #else
-    // NessoN1: Use SoftwareI2C via M5HAL for GROVE port.
-    // NanoC6: Use M5.Ex_I2C (m5::I2C_Class) directly.
-    bool unit_ready{};
-    if (board == m5::board_t::board_ArduinoNessoN1) {
-        auto pin_num_sda{M5.getPin(m5::pin_name_t::port_b_out)};
-        auto pin_num_scl{M5.getPin(m5::pin_name_t::port_b_in)};
-        M5_LOGI("getPin(M5HAL): SDA:%d SCL:%d", pin_num_sda, pin_num_scl);
-        m5::hal::bus::I2CBusConfig i2c_cfg;
-        i2c_cfg.pin_sda = m5::hal::gpio::getPin(pin_num_sda);
-        i2c_cfg.pin_scl = m5::hal::gpio::getPin(pin_num_scl);
-        auto i2c_bus{m5::hal::bus::i2c::getBus(i2c_cfg)};
-        M5_LOGI("Bus:%d", i2c_bus.has_value());
-        unit_ready = Units.add(unit, i2c_bus ? i2c_bus.value() : nullptr) && Units.begin();
-    } else if (board == m5::board_t::board_M5NanoC6) {
-        M5_LOGI("Using M5.Ex_I2C");
-        unit_ready = Units.add(unit, M5.Ex_I2C) && Units.begin();
-    } else {
-        auto pin_num_sda{M5.getPin(m5::pin_name_t::port_a_sda)};
-        auto pin_num_scl{M5.getPin(m5::pin_name_t::port_a_scl)};
-        M5_LOGI("getPin: SDA:%d SCL:%d", pin_num_sda, pin_num_scl);
-        Wire.end();
-        Wire.begin(pin_num_sda, pin_num_scl, 400 * 1000U);
-        //        m5::utility::delay(50);  // Allow BH1750 VCC rails to settle after Wire.begin().
-        unit_ready = Units.add(unit, Wire) && Units.begin();
-    }
-    if (!unit_ready) {
+    // UnitDLight: NessoN1 -> SoftwareI2C (M5HAL), NanoC6 / NanoH2 -> M5.Ex_I2C, others -> Wire
+    if (!m5::unit::wiring::addI2C(Units, unit, 400 * 1000U) || !Units.begin()) {
         M5_LOGE("Failed to begin");
-        lcd.fillScreen(TFT_RED);
-        while (true) {
-            m5::utility::delay(10000);
-        }
+        m5::unit::wiring::failStop();
     }
 #endif
 

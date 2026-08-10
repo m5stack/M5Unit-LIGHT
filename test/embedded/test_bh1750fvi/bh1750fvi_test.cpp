@@ -7,7 +7,7 @@
   UnitTest for UnitBH1750FVI (Unit DLight / Hat DLight)
 */
 #include <gtest/gtest.h>
-#include <Wire.h>
+#include <driver/gpio.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
 #include <googletest/test_template.hpp>
@@ -34,32 +34,6 @@ uint32_t upper_bound(uint32_t expected)
 }
 }  // namespace
 
-#if defined(USING_HAT_DLIGHT)
-namespace hat {
-struct I2cPins {
-    int sda, scl;
-};
-
-I2cPins get_hat_pins(const m5::board_t board)
-{
-    switch (board) {
-        case m5::board_t::board_M5StickC:
-        case m5::board_t::board_M5StickCPlus:
-        case m5::board_t::board_M5StickCPlus2:
-            return {0, 26};
-        case m5::board_t::board_M5StickS3:
-            return {8, 0};
-        case m5::board_t::board_M5StackCoreInk:
-            return {25, 26};
-        case m5::board_t::board_ArduinoNessoN1:
-            return {6, 7};
-        default:
-            return {-1, -1};
-    }
-}
-}  // namespace hat
-#endif
-
 class TestBH1750FVI : public I2CComponentTestBase<UnitBH1750FVI> {
 protected:
     virtual UnitBH1750FVI* get_instance() override
@@ -75,18 +49,11 @@ protected:
 #if defined(USING_HAT_DLIGHT)
     virtual bool begin() override
     {
-        const auto board = M5.getBoard();
-        const auto pins  = hat::get_hat_pins(board);
-        if (pins.sda < 0 || pins.scl < 0) {
-            M5_LOGE("Hat pins not defined for board %u", static_cast<unsigned>(board));
-            return false;
-        }
-        // NessoN1: Wire is occupied by M5Unified In_I2C; Hat port uses Wire1.
-        auto& wire = (board == m5::board_t::board_ArduinoNessoN1) ? Wire1 : Wire;
-        pinMode(pins.scl, OUTPUT);
-        wire.end();
-        wire.begin(pins.sda, pins.scl, unit->component_config().clock);
-        return Units.add(*unit, wire) && Units.begin();
+        // HatDLight: NessoN1 uses Wire1, other StickC-family boards use Wire.
+        // Drive SCL as OUTPUT before bus init (some boards leave it floating on reset).
+        const auto pins = m5::unit::wiring::hatI2CPins();
+        gpio_set_direction(static_cast<gpio_num_t>(pins.scl), GPIO_MODE_OUTPUT);
+        return m5::unit::wiring::addHatI2C(Units, *unit, unit->component_config().clock) && Units.begin();
     }
 #endif
 };
@@ -320,4 +287,51 @@ TEST_F(TestBH1750FVI, Power)
     EXPECT_TRUE(unit->powerDown());
     EXPECT_TRUE(unit->powerOn());
     EXPECT_TRUE(unit->softReset());
+}
+
+// --- powerDown() must clear _periodic to avoid stale read on next update() ---
+TEST_F(TestBH1750FVI, PowerDownClearsPeriodic)
+{
+    SCOPED_TRACE(ustr);
+    // Default config starts periodic on begin() → inPeriodic() is true here.
+    EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_TRUE(unit->powerDown());
+    // Contract: powerDown() puts the chip in Power Down AND clears _periodic so
+    // subsequent update() won't try to read stale data from an asleep sensor.
+    EXPECT_FALSE(unit->inPeriodic());
+}
+
+// --- 400 kHz I2C clock is the datasheet ceiling; guard against regressions ---
+TEST_F(TestBH1750FVI, ClockIsCappedAt400kHz)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_EQ(unit->component_config().clock, 400 * 1000U);
+}
+
+// --- interval() = ceil(base_ms * mtreg / MTREG_DEFAULT); check against explicit expected values ---
+TEST_F(TestBH1750FVI, IntervalMatchesFormula)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+
+    struct Case {
+        Resolution res;
+        uint8_t mtreg;
+        uint32_t expected_ms;
+    };
+    const Case cases[] = {
+        {Resolution::High, MTREG_DEFAULT, 180},
+        {Resolution::High2, MTREG_DEFAULT, 180},
+        {Resolution::Low, MTREG_DEFAULT, 24},
+        {Resolution::High, MTREG_MIN, (180U * MTREG_MIN + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+        {Resolution::High, MTREG_MAX, (180U * MTREG_MAX + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+        {Resolution::Low, MTREG_MIN, (24U * MTREG_MIN + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+        {Resolution::Low, MTREG_MAX, (24U * MTREG_MAX + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+    };
+    for (const auto& c : cases) {
+        EXPECT_TRUE(unit->startPeriodicMeasurement(c.res, c.mtreg));
+        EXPECT_EQ(unit->interval(), c.expected_ms)
+            << "res=" << static_cast<int>(c.res) << " mtreg=" << static_cast<unsigned>(c.mtreg);
+        EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    }
 }
