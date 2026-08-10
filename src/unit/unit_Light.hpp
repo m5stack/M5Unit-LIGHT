@@ -87,6 +87,10 @@ public:
     ///@{
     //! @brief Latest analog raw value
     //! @return Raw ADC value (0 if no data)
+    //! @note Raw ADC is chip-generation dependent: ESP32 classic saturates near 4095 (non-linear above ~2.45 V),
+    //!       while ESP32-C6/H2/S3/P4 read linearly up to 3.3 V (so dark values may not reach 4095 on those chips).
+    //!       Use normalized() with calibrateDark()/calibrateBright() for portable 0-100% readings.
+    //!       See: https://developer.espressif.com/blog/2025/08/adc-performance/
     inline uint16_t analog() const
     {
         return !empty() ? latest().analog_raw : 0;

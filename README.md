@@ -14,6 +14,17 @@ Hat DLight is a digital ambient light detection sensor compatible with the M5Sti
 ### SKU:U021
 Unit Light is a light intensity detection sensor. It integrates a photoresistor and a 10K adjustable resistor, capable of detecting light intensity and setting a light intensity threshold. The resistance of the photoresistor decreases as the incident light intensity increases, thus detecting the change in voltage, and obtaining light intensity data through AD conversion. To achieve more accurate light intensity measurements, this Unit also adopts the LM393 dual differential comparator, used to compare the differential voltage between the photoresistor and the varistor.
 
+#### Analog reading notes (chip-generation dependent)
+
+Raw ADC values from `unit.analog()` are **not directly comparable across boards** because ESP32 ADC characteristics differ by chip generation:
+
+- **ESP32 classic** (Core / Fire / StickCPlus 等): ATTEN_DB_11 is non-linear above ~2.45 V; dark readings tend to saturate near 4095 due to ADC compression, not true full-scale.
+- **ESP32-C6 / -H2 / -S3 / -P4** (NanoC6 / NanoH2 / CoreS3 / StickS3 / Tab5): ATTEN_DB_12 is linear across 0–3.3 V; the same physical light level yields a lower raw value (~3900) than on ESP32 classic — this is the more accurate reading.
+
+Reference: [Espressif Developer Blog — Comparing ADC Performance of Espressif SoCs (2025-08)](https://developer.espressif.com/blog/2025/08/adc-performance/)
+
+**Always calibrate per board** via `unit.calibrateDark()` / `unit.calibrateBright()` (BtnA click / hold in `PlotToSerial` example) so that `unit.normalized()` returns a portable 0–100 % value regardless of chip.
+
 ## Related Link
 See also examples using conventional methods here.
 
