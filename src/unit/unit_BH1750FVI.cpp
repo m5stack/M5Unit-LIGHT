@@ -177,16 +177,17 @@ bool UnitBH1750FVI::writeMTreg(const uint8_t mtreg)
     if (!write_mtreg_opcodes(mtreg)) {
         return false;
     }
+    // write_mtreg_opcodes() succeeded → the chip has the new MTreg. Commit the cache
+    // now so subsequent reads label data with the value actually programmed on-chip,
+    // even if the mode re-send below fails.
+    _mtreg = mtreg;
 
     if (inPeriodic()) {
-        // Re-send the current mode opcode so the sensor picks up the new MTreg
+        // Re-send the current mode opcode so the sensor triggers a fresh measurement
+        // using the new MTreg.
         if (!write_opcode(opcode_for(Mode::Continuous, _resolution))) {
             return false;
         }
-    }
-    // Commit cache only after all opcode writes succeed.
-    _mtreg = mtreg;
-    if (inPeriodic()) {
         apply_interval(_resolution, _mtreg);
         _latest = m5::utility::millis();
     }
