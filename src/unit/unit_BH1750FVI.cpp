@@ -198,7 +198,13 @@ bool UnitBH1750FVI::powerOn()
 
 bool UnitBH1750FVI::powerDown()
 {
-    return write_opcode(POWER_DOWN);
+    if (!write_opcode(POWER_DOWN)) {
+        return false;
+    }
+    // Also clear _periodic so subsequent update() doesn't read stale data
+    // from a chip that's asleep. (Equivalent to stop_periodic_measurement() side effect.)
+    _periodic = false;
+    return true;
 }
 
 bool UnitBH1750FVI::softReset()

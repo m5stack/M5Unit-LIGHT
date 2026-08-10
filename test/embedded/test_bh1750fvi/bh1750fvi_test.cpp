@@ -288,3 +288,15 @@ TEST_F(TestBH1750FVI, Power)
     EXPECT_TRUE(unit->powerOn());
     EXPECT_TRUE(unit->softReset());
 }
+
+// --- powerDown() must clear _periodic to avoid stale read on next update() ---
+TEST_F(TestBH1750FVI, PowerDownClearsPeriodic)
+{
+    SCOPED_TRACE(ustr);
+    // Default config starts periodic on begin() → inPeriodic() is true here.
+    EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_TRUE(unit->powerDown());
+    // Contract: powerDown() puts the chip in Power Down AND clears _periodic so
+    // subsequent update() won't try to read stale data from an asleep sensor.
+    EXPECT_FALSE(unit->inPeriodic());
+}
