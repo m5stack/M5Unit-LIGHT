@@ -323,17 +323,19 @@ uint8_t UnitBH1750FVI::opcode_for(const bh1750fvi::Mode mode, const bh1750fvi::R
             case Resolution::High2:
                 return CONTINUOUS_H_RES_MODE2;
         }
-    } else {
-        switch (resolution) {
-            case Resolution::Low:
-                return ONE_TIME_L_RES_MODE;
-            case Resolution::High:
-                return ONE_TIME_H_RES_MODE;
-            case Resolution::High2:
-                return ONE_TIME_H_RES_MODE2;
-        }
+        M5_LIB_LOGE("Invalid resolution %u for Continuous mode", static_cast<unsigned>(resolution));
+        return CONTINUOUS_H_RES_MODE;
     }
-    return CONTINUOUS_H_RES_MODE;  // fallback
+    switch (resolution) {
+        case Resolution::Low:
+            return ONE_TIME_L_RES_MODE;
+        case Resolution::High:
+            return ONE_TIME_H_RES_MODE;
+        case Resolution::High2:
+            return ONE_TIME_H_RES_MODE2;
+    }
+    M5_LIB_LOGE("Invalid resolution %u for OneTime mode", static_cast<unsigned>(resolution));
+    return ONE_TIME_H_RES_MODE;
 }
 
 void UnitBH1750FVI::apply_interval(const bh1750fvi::Resolution resolution, const uint8_t mtreg)
