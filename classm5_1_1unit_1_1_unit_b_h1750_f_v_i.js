@@ -4,7 +4,7 @@ var classm5_1_1unit_1_1_unit_b_h1750_f_v_i =
     [ "UnitBH1750FVI", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a1baf4e6fb30b981099a82c4add81dbeb", null ],
     [ "~UnitBH1750FVI", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a18e83fecc7ffc3b9fe8febcafb414325", null ],
     [ "begin", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a710fe46688a218305686075a9a98eb8e", null ],
-    [ "config", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a0ab69104dc9693fbd2f60bb6c09031ac", null ],
+    [ "config", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#af99ed1ec95043e8823521bf3a05e2f45", null ],
     [ "config", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a3ab1b7769a551a791adecd3bde095b91", null ],
     [ "lux", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a95cad77f69870275fb7a7d5cd2ac5c73", null ],
     [ "measureSingleShot", "classm5_1_1unit_1_1_unit_b_h1750_f_v_i.html#a8498236224ea6b2584f8d92910eb974c", null ],

@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.0.1 git rev:9bf6d99</span>
+   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.0.2 git rev:6d734f0</span>
    </div>
   </td>
  </tr>
@@ -107,7 +107,7 @@ $(function(){initNavTree('structm5_1_1unit_1_1bh1750fvi_1_1_data.html',''); init
 <p>Measurement data group.  
  <a href="#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="unit___b_h1750_f_v_i_8hpp_source.html">unit_BH1750FVI.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="unit___b_h1750_f_v_i__data_8hpp_source.html">unit_BH1750FVI_data.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -122,10 +122,12 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>raw</b> {}</td></
 <tr class="memdesc:ada0ed8eadfdad7cfd25a842c454de11b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raw 16-bit ADC value (MSB first) <br /></td></tr>
 <tr class="separator:ada0ed8eadfdad7cfd25a842c454de11b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a010df22318e174e8f850b198a40fb01c" id="r_a010df22318e174e8f850b198a40fb01c"><td class="memItemLeft" align="right" valign="top"><a id="a010df22318e174e8f850b198a40fb01c" name="a010df22318e174e8f850b198a40fb01c"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>mtreg</b> {<a class="el" href="unit___b_h1750_f_v_i_8hpp.html#a05c9df371599644a610265e387807587">MTREG_DEFAULT</a>}</td></tr>
+uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>mtreg</b> {<a class="el" href="unit___b_h1750_f_v_i__data_8hpp.html#a05c9df371599644a610265e387807587">MTREG_DEFAULT</a>}</td></tr>
 <tr class="memdesc:a010df22318e174e8f850b198a40fb01c"><td class="mdescLeft">&#160;</td><td class="mdescRight">MTreg value in effect at the time of measurement. <br /></td></tr>
 <tr class="separator:a010df22318e174e8f850b198a40fb01c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bdc466a94dbdd64c2ecbe058028d4d5" id="r_a3bdc466a94dbdd64c2ecbe058028d4d5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="unit___b_h1750_f_v_i_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55b">Resolution</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3bdc466a94dbdd64c2ecbe058028d4d5">resolution</a> {<a class="el" href="unit___b_h1750_f_v_i_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55ba655d20c1ca69519ca647684edbb2db35">Resolution::High</a>}</td></tr>
+<tr class="memitem:a3bdc466a94dbdd64c2ecbe058028d4d5" id="r_a3bdc466a94dbdd64c2ecbe058028d4d5"><td class="memItemLeft" align="right" valign="top"><a id="a3bdc466a94dbdd64c2ecbe058028d4d5" name="a3bdc466a94dbdd64c2ecbe058028d4d5"></a>
+<a class="el" href="unit___b_h1750_f_v_i__data_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55b">Resolution</a>&#160;</td><td class="memItemRight" valign="bottom"><b>resolution</b> {<a class="el" href="unit___b_h1750_f_v_i__data_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55ba655d20c1ca69519ca647684edbb2db35">Resolution::High</a>}</td></tr>
+<tr class="memdesc:a3bdc466a94dbdd64c2ecbe058028d4d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolution in effect at the time of measurement. <br /></td></tr>
 <tr class="separator:a3bdc466a94dbdd64c2ecbe058028d4d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -136,6 +138,9 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>mtreg</b> {<a clas
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">float m5::unit::bh1750fvi::Data::lux </td>
@@ -144,26 +149,15 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>mtreg</b> {<a clas
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Illuminance in lx. </p>
 <p>lux = raw / 1.2 * (69 / mtreg) [/ 2 if High2] </p><dl class="section return"><dt>Returns</dt><dd>Illuminance in lx (NaN if mtreg == 0) </dd></dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a3bdc466a94dbdd64c2ecbe058028d4d5" name="a3bdc466a94dbdd64c2ecbe058028d4d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3bdc466a94dbdd64c2ecbe058028d4d5">&#9670;&#160;</a></span>resolution</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="unit___b_h1750_f_v_i_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55b">Resolution</a> m5::unit::bh1750fvi::Data::resolution {<a class="el" href="unit___b_h1750_f_v_i_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55ba655d20c1ca69519ca647684edbb2db35">Resolution::High</a>}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Resolution in effect at the time of measurement </p>
 
 </div>
 </div>

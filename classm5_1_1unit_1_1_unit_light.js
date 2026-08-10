@@ -8,7 +8,7 @@ var classm5_1_1unit_1_1_unit_light =
     [ "bright", "classm5_1_1unit_1_1_unit_light.html#afdea7667d690fb8e7fde1a832d69351a", null ],
     [ "calibrateBright", "classm5_1_1unit_1_1_unit_light.html#aa821e5d41b47f9eed0cd30031051ad01", null ],
     [ "calibrateDark", "classm5_1_1unit_1_1_unit_light.html#a79d8b8055ab878bc3498da316e05164e", null ],
-    [ "config", "classm5_1_1unit_1_1_unit_light.html#a499e05ca54f142797187ebfabb7a0a31", null ],
+    [ "config", "classm5_1_1unit_1_1_unit_light.html#a262c3e7706d9c21ad0505ce597971867", null ],
     [ "config", "classm5_1_1unit_1_1_unit_light.html#aec10fbb9013cced4366180411bc6da0e", null ],
     [ "dark", "classm5_1_1unit_1_1_unit_light.html#a377f18297f71d401bc61ec202db6cc7f", null ],
     [ "digital", "classm5_1_1unit_1_1_unit_light.html#aa5f2cc72d3386930658406a45c6417e3", null ],
