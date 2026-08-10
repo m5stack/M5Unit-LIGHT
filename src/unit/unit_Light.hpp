@@ -71,7 +71,7 @@ public:
     ///@{
     //! @brief Gets the configuration
     //! @return Current configuration
-    inline config_t config()
+    inline config_t config() const
     {
         return _cfg;
     }
@@ -93,6 +93,7 @@ public:
     }
     //! @brief Latest digital threshold output
     //! @return Comparator output (false if no data)
+    //! @note Comparator output polarity depends on board revision / trimpot setting; do not assume true == bright.
     inline bool digital() const
     {
         return !empty() ? latest().digital : false;
@@ -140,16 +141,20 @@ public:
     ///@name Calibration
     ///@{
     /*! @brief Record the current analog reading as the dark reference
-        @return True if successful */
+        @return True if successful
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     bool calibrateDark();
     /*! @brief Record the current analog reading as the bright reference
-        @return True if successful */
+        @return True if successful
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     bool calibrateBright();
     /*! @brief Set dark/bright references explicitly
         @param dark Dark reference (ADC value measured under covered sensor)
-        @param bright Bright reference (ADC value measured under bright exposure) */
+        @param bright Bright reference (ADC value measured under bright exposure)
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     void setCalibration(const uint16_t dark, const uint16_t bright);
-    /*! @brief Reset calibration (dark=0, bright=4095) */
+    /*! @brief Reset calibration (dark=0, bright=4095)
+        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
     void resetCalibration();
 
     //! @brief Current dark reference
