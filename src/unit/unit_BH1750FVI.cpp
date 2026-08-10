@@ -120,7 +120,7 @@ void UnitBH1750FVI::update(const bool force)
     _updated = false;
     if (inPeriodic()) {
         elapsed_time_t at{m5::utility::millis()};
-        if (force || !_latest || at >= _latest + _interval) {
+        if (force || !_latest || (at - _latest) >= _interval) {
             bh1750fvi::Data d{};
             if (read_measurement(d)) {
                 _updated = true;
