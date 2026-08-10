@@ -157,14 +157,7 @@ void draw_status()
 
 void setup()
 {
-    auto m5cfg{M5.config()};
-#if defined(USING_HAT_DLIGHT)
-    m5cfg.pmic_button  = false;  // Disable BtnPWR on StickC series
-    m5cfg.internal_imu = false;
-    m5cfg.internal_rtc = false;
-#endif
-
-    M5.begin(m5cfg);
+    M5.begin();
     M5.setTouchButtonHeightByRatio(100);
 
     if (lcd.height() > lcd.width()) {
