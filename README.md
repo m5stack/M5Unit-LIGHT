@@ -6,7 +6,7 @@ Library for M5Stack light-related units using [M5UnitUnified](https://github.com
 M5UnitUnified is a library for unified handling of various M5 units products.
 
 ### SKU:U136
-Unit DLight is a digital ambient light detection sensor. The hardware uses a BH1750FVI illuminance sensor IC (I2C interface), with built-in 16-bit AD conversion supporting (1 ~ 65535 lx) illuminance value detection. It features small size and low power consumption, making it suitable for various illuminance detection and light control adjustment scenarios.
+Unit DLight is a digital ambient light detection sensor. The hardware uses a BH1750FVI illuminance sensor IC (I2C interface), with built-in 16-bit AD conversion supporting (1 ~ 65535 lx) illuminance value detection. It features a small size and low power consumption, making it suitable for various illuminance detection and light control adjustment scenarios.
 
 ### SKU:U134
 Hat DLight is a digital ambient light detection sensor compatible with the M5StickC/C Plus series. The hardware uses the BH1750FVI illuminance sensor IC (I2C interface), with a built-in 16-bit AD converter, supporting illuminance value detection from 1 to 65535 lx. It features a small size and low power consumption, making it suitable for various illuminance detection and light control adjustment scenarios.
