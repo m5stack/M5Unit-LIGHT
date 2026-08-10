@@ -17,27 +17,8 @@ using namespace m5::unit::light;
 namespace m5 {
 namespace unit {
 
-namespace light {
-
-float Data::normalized() const
-{
-    // dark / bright are the ADC readings captured while the sensor was covered (dark) and
-    // exposed to a bright reference (bright). They DO NOT imply dark < bright: on U021
-    // the photoresistor circuit polarity is board-specific (some revisions yield higher
-    // ADC in the dark, others in the light), so dark > bright is legitimate. The mapping
-    // always emits 0% at the dark reference and 100% at the bright reference regardless
-    // of which endpoint is the larger ADC number.
-    if (dark == bright) {
-        return std::numeric_limits<float>::quiet_NaN();
-    }
-    const float span{static_cast<float>(bright) - static_cast<float>(dark)};
-    float v{(static_cast<float>(analog_raw) - static_cast<float>(dark)) * 100.0f / span};
-    if (v < 0.0f) v = 0.0f;
-    if (v > 100.0f) v = 100.0f;
-    return v;
-}
-
-}  // namespace light
+// Data::normalized() is defined inline in unit_Light_data.hpp so native (SDL) formula tests
+// can link without a driver .cpp.
 
 // class UnitLight
 const char UnitLight::name[] = "UnitLight";

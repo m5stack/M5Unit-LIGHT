@@ -39,24 +39,8 @@ constexpr uint32_t OPCODE_GUARD_DELAY_MS{5};
 namespace m5 {
 namespace unit {
 
-namespace bh1750fvi {
-
-float Data::lux() const
-{
-    // lux = raw / 1.2 * (69 / mtreg) [ / 2 if High2 ]
-    if (mtreg == 0) {
-        return std::numeric_limits<float>::quiet_NaN();
-    }
-    const float base{static_cast<float>(raw) / 1.2f};
-    const float scale{static_cast<float>(MTREG_DEFAULT) / static_cast<float>(mtreg)};
-    float v{base * scale};
-    if (resolution == Resolution::High2) {
-        v *= 0.5f;
-    }
-    return v;
-}
-
-}  // namespace bh1750fvi
+// Data::lux() is defined inline in unit_BH1750FVI_data.hpp so native (SDL) formula tests
+// can link without a driver .cpp.
 
 // class UnitBH1750FVI
 const char UnitBH1750FVI::name[] = "UnitBH1750FVI";

@@ -16,40 +16,12 @@
 #include <M5UnitComponent.hpp>
 #include <m5_utility/stl/extension.hpp>
 #include <m5_utility/container/circular_buffer.hpp>
+#include "unit_Light_data.hpp"  // Data (with inline normalized())
 #include <cstdint>
 #include <limits>
 
 namespace m5 {
 namespace unit {
-
-/*!
-  @namespace light
-  @brief For UnitLight (U021)
- */
-namespace light {
-
-/*!
-  @struct Data
-  @brief Measurement data group
- */
-struct Data {
-    uint16_t analog_raw{};  //!< Raw ADC value from the photoresistor path
-    bool digital{};         //!< Comparator threshold output (active level is board-specific; verify with calibration)
-    uint16_t dark{0};       //!< ADC reading captured when the sensor was covered (dark reference)
-    uint16_t bright{4095};  //!< ADC reading captured when the sensor was lit (bright reference)
-
-    /*!
-      @brief Normalized brightness in 0..100 (%), where 0% = dark reference and 100% = bright reference
-      @return NaN only when dark == bright (cannot form a range)
-      @note dark and bright are stored as the raw ADC values captured during calibration; their
-            magnitudes do not imply polarity. On U021 the photoresistor circuit polarity is
-            board-specific (some revisions yield higher ADC in the dark, others in the light)
-            — normalized() handles either polarity and always maps dark to 0% and bright to 100%.
-     */
-    float normalized() const;
-};
-
-}  // namespace light
 
 /*!
   @class m5::unit::UnitLight
