@@ -300,3 +300,38 @@ TEST_F(TestBH1750FVI, PowerDownClearsPeriodic)
     // subsequent update() won't try to read stale data from an asleep sensor.
     EXPECT_FALSE(unit->inPeriodic());
 }
+
+// --- 400 kHz I2C clock is the datasheet ceiling; guard against regressions ---
+TEST_F(TestBH1750FVI, ClockIsCappedAt400kHz)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_EQ(unit->component_config().clock, 400 * 1000U);
+}
+
+// --- interval() = ceil(base_ms * mtreg / MTREG_DEFAULT); check against explicit expected values ---
+TEST_F(TestBH1750FVI, IntervalMatchesFormula)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+
+    struct Case {
+        Resolution res;
+        uint8_t mtreg;
+        uint32_t expected_ms;
+    };
+    const Case cases[] = {
+        {Resolution::High, MTREG_DEFAULT, 180},
+        {Resolution::High2, MTREG_DEFAULT, 180},
+        {Resolution::Low, MTREG_DEFAULT, 24},
+        {Resolution::High, MTREG_MIN, (180U * MTREG_MIN + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+        {Resolution::High, MTREG_MAX, (180U * MTREG_MAX + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+        {Resolution::Low, MTREG_MIN, (24U * MTREG_MIN + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+        {Resolution::Low, MTREG_MAX, (24U * MTREG_MAX + MTREG_DEFAULT - 1) / MTREG_DEFAULT},
+    };
+    for (const auto& c : cases) {
+        EXPECT_TRUE(unit->startPeriodicMeasurement(c.res, c.mtreg));
+        EXPECT_EQ(unit->interval(), c.expected_ms)
+            << "res=" << static_cast<int>(c.res) << " mtreg=" << static_cast<unsigned>(c.mtreg);
+        EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    }
+}
