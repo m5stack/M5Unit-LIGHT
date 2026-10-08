@@ -86,7 +86,7 @@ void setup()
     }
 
     // UnitPbHub: NessoN1 -> SoftwareI2C (M5HAL), NanoC6 / NanoH2 -> M5.Ex_I2C, others -> Wire
-    if (!m5::unit::wiring::addI2C(Units, hub, 400 * 1000U) || !Units.begin()) {
+    if (!m5::unit::wiring::addI2C(Units, hub) || !Units.begin()) {
         M5_LOGE("Failed to begin");
         m5::unit::wiring::failStop();
     }
