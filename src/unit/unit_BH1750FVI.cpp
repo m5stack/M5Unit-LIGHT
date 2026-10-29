@@ -184,13 +184,7 @@ bool UnitBH1750FVI::writeSensitivityFactor(const float factor)
         return false;
     }
     const float mt_f{static_cast<float>(MTREG_DEFAULT) * factor};
-    long mt{std::lround(mt_f)};
-    if (mt < MTREG_MIN) {
-        mt = MTREG_MIN;
-    }
-    if (mt > MTREG_MAX) {
-        mt = MTREG_MAX;
-    }
+    const long mt{m5::stl::clamp(std::lround(mt_f), static_cast<long>(MTREG_MIN), static_cast<long>(MTREG_MAX))};
     return writeMTreg(static_cast<uint8_t>(mt));
 }
 
