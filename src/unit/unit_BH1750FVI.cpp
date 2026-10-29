@@ -8,8 +8,10 @@
   @brief BH1750FVI Unit for M5UnitUnified
 */
 #include "unit_BH1750FVI.hpp"
-#include <M5Utility.hpp>
+
 #include <cmath>
+
+#include <M5Utility.hpp>
 
 using namespace m5::utility::mmh3;
 using namespace m5::unit::types;
@@ -30,8 +32,7 @@ constexpr uint32_t FIRST_TRANSACTION_RETRY_DELAY_MS{100};
 // The BH1750 datasheet requires a STOP between opcodes (which we already emit) but
 // the chip also needs a few ms of settle time before it will honor the next opcode —
 // without this, the Continuous-mode opcode can be absorbed as a One-Time command
-// and the chip returns the same reading forever. Keeping the delay inside write_opcode()
-// means every caller is safe by construction; no site needs to remember to add it.
+// and the chip returns the same reading forever. Applied inside write_opcode() so every opcode write gets it.
 constexpr uint32_t OPCODE_GUARD_DELAY_MS{5};
 
 }  // namespace
@@ -86,12 +87,10 @@ bool UnitBH1750FVI::begin()
         return false;
     }
 
-    // Apply MTreg from config (default 69 is the chip default, but set explicitly for consistency)
-    if (_cfg.mtreg != MTREG_DEFAULT) {
-        if (!write_mtreg_opcodes(_cfg.mtreg)) {
-            M5_LIB_LOGE("Failed to write MTreg");
-            return false;
-        }
+    // MTreg is not cleared by RESET, so always write it
+    if (!write_mtreg_opcodes(_cfg.mtreg)) {
+        M5_LIB_LOGE("Failed to write MTreg");
+        return false;
     }
     _mtreg      = _cfg.mtreg;
     _resolution = _cfg.resolution;
@@ -103,7 +102,7 @@ void UnitBH1750FVI::update(const bool force)
 {
     _updated = false;
     if (inPeriodic()) {
-        elapsed_time_t at{m5::utility::millis()};
+        const elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || (at - _latest) >= _interval) {
             bh1750fvi::Data d{};
             if (read_measurement(d)) {
@@ -186,8 +185,12 @@ bool UnitBH1750FVI::writeSensitivityFactor(const float factor)
     }
     const float mt_f{static_cast<float>(MTREG_DEFAULT) * factor};
     long mt{std::lround(mt_f)};
-    if (mt < MTREG_MIN) mt = MTREG_MIN;
-    if (mt > MTREG_MAX) mt = MTREG_MAX;
+    if (mt < MTREG_MIN) {
+        mt = MTREG_MIN;
+    }
+    if (mt > MTREG_MAX) {
+        mt = MTREG_MAX;
+    }
     return writeMTreg(static_cast<uint8_t>(mt));
 }
 
@@ -265,14 +268,13 @@ bool UnitBH1750FVI::stop_periodic_measurement()
 
 bool UnitBH1750FVI::read_measurement(bh1750fvi::Data& data)
 {
-    uint8_t buf[2]{};
-    if (readWithTransaction(buf, 2) != m5::hal::error::error_t::OK) {
+    m5::types::big_uint16_t v{};
+    if (readWithTransaction(v.data(), v.size()) != m5::hal::error::error_t::OK) {
         return false;
     }
-    data.raw        = (static_cast<uint16_t>(buf[0]) << 8) | buf[1];
+    data.raw        = v.get();
     data.mtreg      = _mtreg;
     data.resolution = _resolution;
-    // M5_LIB_LOGI("read: 0x%02X 0x%02X raw=%u", buf[0], buf[1], data.raw);
     return true;
 }
 
@@ -280,7 +282,7 @@ bool UnitBH1750FVI::write_opcode(const uint8_t opcode)
 {
     // BH1750 accepts exactly one opcode per I2C transaction (with STOP), followed by a
     // short guard delay so the chip settles before the next opcode. See OPCODE_GUARD_DELAY_MS.
-    uint8_t op{opcode};
+    const uint8_t op{opcode};
     if (writeWithTransaction(&op, 1) != m5::hal::error::error_t::OK) {
         return false;
     }

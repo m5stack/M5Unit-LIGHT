@@ -175,6 +175,35 @@ TEST_F(TestBH1750FVI, WriteMTregInPeriodic)
     EXPECT_LE(result.median(), upper_bound(result.expected_interval));
 }
 
+// --- begin() rewrites MTreg (RESET does not clear it on the chip) ---
+TEST_F(TestBH1750FVI, BeginRewritesMTreg)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_TRUE(unit->powerOn());
+    EXPECT_TRUE(unit->writeMTreg(MTREG_MAX));
+
+    auto cfg           = unit->config();
+    cfg.start_periodic = false;
+    cfg.mtreg          = MTREG_DEFAULT;
+    unit->config(cfg);
+    EXPECT_TRUE(unit->begin());
+    EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
+
+    // mtreg equals the cache, so no MTreg write happens here: the reading uses whatever the chip holds
+    Data after_begin{};
+    EXPECT_TRUE(unit->measureSingleShot(after_begin, Resolution::High, MTREG_DEFAULT));
+    // Force a real MTreg write of the default for reference
+    Data reference{};
+    EXPECT_TRUE(unit->measureSingleShot(reference, Resolution::High, MTREG_DEFAULT + 1));
+    EXPECT_TRUE(unit->measureSingleShot(reference, Resolution::High, MTREG_DEFAULT));
+    // At MTREG_MAX (254/69) the count would be ~3.7x the reference, or 0 if the conversion is not finished
+    // within the MTREG_DEFAULT wait; both fail the two-sided bound below (assumes stable lighting)
+    EXPECT_GE(reference.raw, 20U) << "Needs room light on the sensor (do not cover it)";
+    EXPECT_GE(after_begin.raw * 2U + 10U, reference.raw);
+    EXPECT_LE(after_begin.raw, reference.raw * 2U + 10U);
+}
+
 // --- SensitivityFactor bounds ---
 TEST_F(TestBH1750FVI, SensitivityFactorBounds)
 {
