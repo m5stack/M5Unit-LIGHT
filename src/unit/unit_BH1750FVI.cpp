@@ -29,10 +29,10 @@ constexpr uint8_t FIRST_TRANSACTION_RETRIES{3};
 constexpr uint32_t FIRST_TRANSACTION_RETRY_DELAY_MS{100};
 
 // Guard delay applied inside write_opcode() after every successful opcode write.
-// The BH1750 datasheet requires a STOP between opcodes (which we already emit) but
-// the chip also needs a few ms of settle time before it will honor the next opcode —
-// without this, the Continuous-mode opcode can be absorbed as a One-Time command
-// and the chip returns the same reading forever. Applied inside write_opcode() so every opcode write gets it.
+// Not required by the datasheet (it only specifies tBUF 1.3 us between transactions); kept as a margin
+// against a chip that ignored a Continuous-mode opcode right after another opcode. Not reproduced on a
+// CoreS3 + Unit DLight with 0-5 ms (claws/BH1750 waits 10 ms after the mode opcode). Applied inside
+// write_opcode() so every opcode write gets it.
 constexpr uint32_t OPCODE_GUARD_DELAY_MS{5};
 
 }  // namespace
