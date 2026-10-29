@@ -12,13 +12,14 @@
   BtnA hold:  cycle resolution Low -> High -> High2 (also re-measures
               for instant feedback in either mode)
 */
+#include <cmath>   // std::isnan
+#include <limits>  // std::numeric_limits
+
 #include <driver/gpio.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <M5UnitUnifiedLIGHT.h>
 #include <wiring/m5_unit_unified_wiring.hpp>  // Board-aware connection helpers (include last)
-#include <cmath>                              // std::isnan
-#include <limits>                             // std::numeric_limits
 
 // *************************************************************
 // Choose one define symbol to match the unit you are using
@@ -31,9 +32,9 @@
 #endif
 
 #if defined(USING_UNIT_DLIGHT)
-#pragma message "Using UnitDLight"
+#pragma message("Using UnitDLight")
 #elif defined(USING_HAT_DLIGHT)
-#pragma message "Using HatDLight"
+#pragma message("Using HatDLight")
 #else
 #error Please choose unit!
 #endif
@@ -52,7 +53,7 @@ m5::unit::HatDLight unit;
 #endif
 
 constexpr uint32_t DRAW_INTERVAL_MS{50};
-uint32_t last_draw_ms{0};
+m5::utility::elapsed_time_t last_draw_ms{0};
 float last_singleshot_lux{std::numeric_limits<float>::quiet_NaN()};
 uint16_t last_singleshot_raw{0};
 Resolution current_resolution{Resolution::Low};  // matches setup() config
@@ -219,7 +220,7 @@ void loop()
     if (unit.updated()) {
         M5.Log.printf(">lux:%.2f\n>raw:%u\n", unit.lux(), unit.raw());
         // Throttle LCD redraws to avoid flicker from periodic measurements.
-        const uint32_t now{m5::utility::millis()};
+        const m5::utility::elapsed_time_t now{m5::utility::millis()};
         if (now - last_draw_ms >= DRAW_INTERVAL_MS) {
             last_draw_ms = now;
             need_redraw  = true;

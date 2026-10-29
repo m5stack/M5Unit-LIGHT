@@ -22,7 +22,7 @@ m5::unit::UnitUnified Units;
 m5::unit::UnitLight unit;
 
 constexpr uint32_t DRAW_INTERVAL_MS{200};
-uint32_t last_draw_ms{0};
+m5::utility::elapsed_time_t last_draw_ms{0};
 
 void draw_status()
 {
@@ -114,7 +114,7 @@ void loop()
         M5.Log.printf(">analog:%u\n>digital:%u\n>normalized:%.2f\n", unit.analog(), unit.digital() ? 1u : 0u,
                       unit.normalized());
         // Throttle LCD redraws to avoid flicker from periodic measurements.
-        const uint32_t now{m5::utility::millis()};
+        const m5::utility::elapsed_time_t now{m5::utility::millis()};
         if (now - last_draw_ms >= DRAW_INTERVAL_MS) {
             last_draw_ms = now;
             need_redraw  = true;
