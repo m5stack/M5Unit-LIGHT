@@ -13,12 +13,14 @@
 #ifndef M5_UNIT_LIGHT_UNIT_LIGHT_HPP
 #define M5_UNIT_LIGHT_UNIT_LIGHT_HPP
 
-#include <M5UnitComponent.hpp>
-#include <m5_utility/stl/extension.hpp>
-#include <m5_utility/container/circular_buffer.hpp>
-#include "unit_Light_data.hpp"  // Data (with inline normalized())
 #include <cstdint>
 #include <limits>
+#include <memory>  // std::unique_ptr
+
+#include <M5UnitComponent.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
+
+#include "unit_Light_data.hpp"  // Data (with inline normalized())
 
 namespace m5 {
 namespace unit {
@@ -87,8 +89,9 @@ public:
     ///@{
     //! @brief Latest analog raw value
     //! @return Raw ADC value (0 if no data)
-    //! @note Raw ADC is chip-generation dependent: ESP32 classic saturates near 4095 (non-linear above ~2.45 V),
-    //!       while ESP32-C6/H2/S3/P4 read linearly up to 3.3 V (so dark values may not reach 4095 on those chips).
+    //! @note Raw ADC is chip-generation dependent: the measurable range is about 150-2450 mV on ESP32 classic,
+    //!       0-2900 mV on ESP32-S3 (non-linear above ~2750 mV) and 0-3300 mV on ESP32-C6/H2/P4, so readings
+    //!       near full scale differ between chips.
     //!       Use normalized() with calibrateDark()/calibrateBright() for portable 0-100% readings.
     //!       See: https://developer.espressif.com/blog/2025/08/adc-performance/
     inline uint16_t analog() const
@@ -104,15 +107,17 @@ public:
     }
     //! @brief Latest normalized light level (0..100), recomputed against the current calibration
     //! @return Normalized percentage (NaN if no data or dark == bright)
-    //! @note Uses the currently configured `_dark` / `_bright` references rather than the values
+    //! @note Uses the current calibration references (dark() / bright()) rather than the values
     //!       stored at measurement time, so calibrateDark/Bright/setCalibration/resetCalibration
     //!       affect the next normalized() call immediately (no stale buffered output).
     inline float normalized() const
     {
-        if (empty()) return std::numeric_limits<float>::quiet_NaN();
-        light::Data d = latest();
-        d.dark        = _dark;
-        d.bright      = _bright;
+        if (empty()) {
+            return std::numeric_limits<float>::quiet_NaN();
+        }
+        light::Data d{latest()};
+        d.dark   = _dark;
+        d.bright = _bright;
         return d.normalized();
     }
     ///@}
@@ -142,23 +147,22 @@ public:
     }
     ///@}
 
-    ///@name Calibration
+    /*!
+      @name Calibration
+      @note Calibration is stored in RAM only; persistence is the user's responsibility.
+    */
     ///@{
     /*! @brief Record the current analog reading as the dark reference
-        @return True if successful
-        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
+        @return True if successful */
     bool calibrateDark();
     /*! @brief Record the current analog reading as the bright reference
-        @return True if successful
-        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
+        @return True if successful */
     bool calibrateBright();
     /*! @brief Set dark/bright references explicitly
         @param dark Dark reference (ADC value measured under covered sensor)
-        @param bright Bright reference (ADC value measured under bright exposure)
-        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
+        @param bright Bright reference (ADC value measured under bright exposure) */
     void setCalibration(const uint16_t dark, const uint16_t bright);
-    /*! @brief Reset calibration (dark=0, bright=4095)
-        @note Calibration is stored in RAM only; persistence is the user's responsibility. */
+    /*! @brief Reset calibration (dark=0, bright=4095) */
     void resetCalibration();
 
     //! @brief Current dark reference
