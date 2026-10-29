@@ -70,6 +70,25 @@ You must choose a define symbol for the unit you will use.
 #endif
 ```
 
+### For ESP-IDF settings
+
+> **NOTE:** The ESP-IDF native build (`idf.py`) targets ESP-IDF **5.1 or later** (5.x and 6.x).
+
+- UnitDLight / HatDLight (PlotToSerial)  
+Choose the unit with `idf.py menuconfig` → `M5Unit-LIGHT example` → `Target unit`
+(`Unit DLight` is the default).
+`common/variant.cmake` maps the choice to `USING_UNIT_DLIGHT` / `USING_HAT_DLIGHT`, so you do not need to edit the source.
+
+```sh
+cd examples/UnitUnified/UnitDLight/PlotToSerial
+idf.py set-target esp32s3               # or esp32 / esp32c5 / esp32c6 / esp32h2 / esp32p4 / ...
+idf.py menuconfig
+idf.py build flash monitor
+```
+
+- UnitLight (PlotToSerial / ViaPbHub)  
+These examples need no Kconfig choice. Build them directly in the same way.
+
 ## Doxygen document
 [GitHub Pages](https://m5stack.github.io/M5Unit-LIGHT/)
 
