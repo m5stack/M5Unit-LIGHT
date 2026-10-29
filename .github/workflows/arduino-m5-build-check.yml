@@ -63,36 +63,41 @@ jobs:
 
         sketch:
           - PlotToSerial
+          # The hub examples go through UnitPaHub / UnitPbHub (M5Unit-HUB), so they are built on every representative board
+          - ViaPaHub
+          - ViaPbHub
 
         board:
-          - arduino_nesso_n1
-          - m5stack_atom
-          - m5stack_atoms3
+          # Reduced from 24 to 9 boards: one per chip, plus the S3 boards with their own PSRAM / flash / USB build properties.
+          # The other boards differ only in the variant header, so the library code compiles the same.
+#          - arduino_nesso_n1  # ESP32-C6: represented by m5stack_nano_c6
+#          - m5stack_atom  # ESP32: represented by m5stack_core
+#          - m5stack_atoms3  # ESP32-S3: represented by m5stack_cores3
           - m5stack_atoms3r
-          - m5stack_capsule
+#          - m5stack_capsule  # ESP32-S3: represented by m5stack_cores3
           - m5stack_cardputer
 #          - m5stack_chain_dualkey
           - m5stack_core
-          - m5stack_core2
-          - m5stack_coreink
+#          - m5stack_core2  # ESP32: represented by m5stack_core
+#          - m5stack_coreink  # ESP32: represented by m5stack_core
           - m5stack_cores3
-          - m5stack_dial
-          - m5stack_dinmeter
-          - m5stack_fire
+#          - m5stack_dial  # ESP32-S3: represented by m5stack_cores3
+#          - m5stack_dinmeter  # ESP32-S3: represented by m5stack_cores3
+#          - m5stack_fire  # ESP32: represented by m5stack_core
           - m5stack_nano_c6
           - m5stack_nano_h2
-          - m5stack_paper
+#          - m5stack_paper  # ESP32: represented by m5stack_core
           - m5stack_papers3
 #          - m5stack_poe_cam
 #          - m5stack_powerhub
 #          - m5stack_stamp_c3
 #          - m5stack_stamp_pico
-          - m5stack_stamp_s3
+#          - m5stack_stamp_s3  # ESP32-S3: represented by m5stack_cores3
 #          - m5stack_stamplc
 #          - m5stack_station
-          - m5stack_stickc
-          - m5stack_stickc_plus
-          - m5stack_stickc_plus2
+#          - m5stack_stickc  # ESP32: represented by m5stack_core
+#          - m5stack_stickc_plus  # ESP32: represented by m5stack_core
+#          - m5stack_stickc_plus2  # ESP32: represented by m5stack_core
           - m5stack_sticks3
           - m5stack_tab5
 #          - m5stack_timer_cam
@@ -102,13 +107,18 @@ jobs:
 #          - m5stack_unit_cams3
 
         platform-version:
-          - 3.2.5
+          - 3.3.10
 
         platform:
           - m5stack
 
         archi:
           - esp32
+
+        # ViaPaHub is for the I2C unit (UnitDLight) only, ViaPbHub for the GPIO unit (UnitLight) only
+        exclude:
+          - {unit: UnitLight, sketch: ViaPaHub}
+          - {unit: UnitDLight, sketch: ViaPbHub}
 
         include:
           # Assign build-properties per unit (merges into existing matrix jobs).
@@ -117,6 +127,16 @@ jobs:
           - unit: UnitLight
             build-properties: ""
           # HatDLight shares UnitDLight's sketch directory via `parent`.
+#         # ESP32 Hat port: represented by m5stack_stickc_plus2
+#         - unit: HatDLight
+#           parent: UnitDLight
+#           sketch: PlotToSerial
+#           build-properties: "-DUSING_HAT_DLIGHT"
+#           platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
+#           platform: m5stack
+#           archi: esp32
+#           platform-version: 3.3.10
+#           board: m5stack_stickc_plus
           - unit: HatDLight
             parent: UnitDLight
             sketch: PlotToSerial
@@ -124,16 +144,7 @@ jobs:
             platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
             platform: m5stack
             archi: esp32
-            platform-version: 3.2.5
-            board: m5stack_stickc_plus
-          - unit: HatDLight
-            parent: UnitDLight
-            sketch: PlotToSerial
-            build-properties: "-DUSING_HAT_DLIGHT"
-            platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
-            platform: m5stack
-            archi: esp32
-            platform-version: 3.2.5
+            platform-version: 3.3.10
             board: m5stack_stickc_plus2
           - unit: HatDLight
             parent: UnitDLight
@@ -142,8 +153,18 @@ jobs:
             platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
             platform: m5stack
             archi: esp32
-            platform-version: 3.2.5
+            platform-version: 3.3.10
             board: m5stack_sticks3
+#         # ESP32 Hat port: represented by m5stack_stickc_plus2
+#         - unit: HatDLight
+#           parent: UnitDLight
+#           sketch: PlotToSerial
+#           build-properties: "-DUSING_HAT_DLIGHT"
+#           platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
+#           platform: m5stack
+#           archi: esp32
+#           platform-version: 3.3.10
+#           board: m5stack_coreink
           - unit: HatDLight
             parent: UnitDLight
             sketch: PlotToSerial
@@ -151,19 +172,8 @@ jobs:
             platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
             platform: m5stack
             archi: esp32
-            platform-version: 3.2.5
-            board: m5stack_coreink
-          - unit: HatDLight
-            parent: UnitDLight
-            sketch: PlotToSerial
-            build-properties: "-DUSING_HAT_DLIGHT"
-            platform-url: https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
-            platform: m5stack
-            archi: esp32
-            platform-version: 3.2.5
+            platform-version: 3.3.10
             board: arduino_nesso_n1
-          # ViaPbHub (Core only)
-          - { sketch: ViaPbHub, unit: UnitLight, board: m5stack_core, platform-url: "https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json", platform-version: 3.2.5, platform: m5stack, archi: esp32, build-properties: "" }
 
     steps:
       - name: Checkout
