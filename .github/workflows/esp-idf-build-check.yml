@@ -89,9 +89,10 @@ jobs:
 
   # HatDLight is the same BH1750FVI driver as UnitDLight; only the connection (addHatI2C) differs, and the Hat port
   # wiring branches per chip: esp32 = StickCPlus2, esp32s3 = StickS3, esp32c6 = NessoN1 (LP I2C).
-  # Built with the latest 5.x only.
+  # The Hat branch of the example is compiled only with this variant, so it is built on the oldest (legacy I2C driver,
+  # no C6 LP I2C master) and the latest (GCC 15 / -Werror) IDF.
   build-hat:
-    name: v5.5.4 ${{ matrix.target }} HatDLight PlotToSerial
+    name: ${{ matrix.idf }} ${{ matrix.target }} HatDLight PlotToSerial
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -99,6 +100,7 @@ jobs:
       max-parallel: 20
       matrix:
         target: [esp32, esp32s3, esp32c6]
+        idf: [v5.1.7, v6.1]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,7 +113,7 @@ jobs:
       - name: ESP-IDF build
         uses: espressif/esp-idf-ci-action@v1
         with:
-          esp_idf_version: v5.5.4
+          esp_idf_version: ${{ matrix.idf }}
           target: ${{ matrix.target }}
           path: examples/UnitUnified/UnitDLight/PlotToSerial
 
