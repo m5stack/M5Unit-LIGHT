@@ -68,8 +68,6 @@ TEST_F(TestBH1750FVI, BeginAppliesConfig)
     // Defaults: Resolution::High, mtreg == MTREG_DEFAULT
     EXPECT_EQ(unit->resolution(), Resolution::High);
     EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
-    // readMTreg() returns the cached value (same as mtreg())
-    EXPECT_EQ(unit->readMTreg(), MTREG_DEFAULT);
 }
 
 TEST_F(TestBH1750FVI, BeginAppliesNonDefaultConfig)

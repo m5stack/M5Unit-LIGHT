@@ -191,7 +191,7 @@ public:
       @return True if successful
       @warning Blocks until the measurement completes (up to 24 ms (Low) or 180 ms (High/High2), scaled by mtreg/69)
       @note Returns false while periodic measurement is running
-      @note The mtreg is kept after the measurement (mtreg() / readMTreg() return it)
+      @note The mtreg is kept after the measurement (mtreg() returns it)
      */
     bool measureSingleShot(bh1750fvi::Data& data, const bh1750fvi::Resolution resolution = bh1750fvi::Resolution::High,
                            const uint8_t mtreg = bh1750fvi::MTREG_DEFAULT);
@@ -216,9 +216,10 @@ public:
 
     //! @brief Gets the current MTreg cache
     //! @return Current MTreg
-    inline uint8_t readMTreg() const
+    //! @deprecated MTreg is write-only on the chip and this returns the cached value; use mtreg() instead
+    [[deprecated("Use mtreg() instead")]] inline uint8_t readMTreg() const
     {
-        return _mtreg;
+        return mtreg();
     }
     ///@}
 
