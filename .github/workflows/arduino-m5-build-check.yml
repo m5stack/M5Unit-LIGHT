@@ -57,6 +57,8 @@ jobs:
         platform-url:
           - https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
 
+        # Every unit uses its own transport and wiring helper (UnitDLight: addI2C, UnitLight: addGPIO),
+        # so the unit axis is not reduced (see skill m5-build-ci-matrix)
         unit:
           - UnitDLight
           - UnitLight

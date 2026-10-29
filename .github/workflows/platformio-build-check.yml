@@ -55,6 +55,8 @@ jobs:
       max-parallel: 20
       
       matrix:
+        # Every unit uses its own transport and wiring helper (UnitDLight: addI2C, UnitLight: addGPIO),
+        # so the unit axis is not reduced (see skill m5-build-ci-matrix)
         unit:
           - UnitDLight
           - UnitLight
