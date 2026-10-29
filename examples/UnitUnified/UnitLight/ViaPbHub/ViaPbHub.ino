@@ -6,6 +6,6 @@
 /*
   Example of using UnitLight (U021) via UnitPbHub
 
-  Core ---> PbHub ---> ch:3 UnitLight
+  Board ---> PbHub ---> ch:3 UnitLight
 */
 #include "main/ViaPbHub.cpp"

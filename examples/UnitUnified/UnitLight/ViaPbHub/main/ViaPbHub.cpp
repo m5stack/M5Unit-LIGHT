@@ -6,7 +6,7 @@
 /*
   Example of using UnitLight (U021, LM393 + photoresistor) via UnitPbHub
 
-  Core ---> PbHub ---> ch:3 UnitLight
+  Board ---> PbHub ---> ch:3 UnitLight
 
   BtnA click: capture dark reference
   BtnA hold:  capture bright reference
