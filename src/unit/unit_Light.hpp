@@ -89,11 +89,12 @@ public:
     ///@{
     //! @brief Latest analog raw value
     //! @return Raw ADC value (0 if no data)
-    //! @note Raw ADC is chip-generation dependent: the measurable range is about 150-2450 mV on ESP32 classic,
-    //!       0-2900 mV on ESP32-S3 (non-linear above ~2750 mV) and 0-3300 mV on ESP32-C6/H2/P4, so readings
-    //!       near full scale differ between chips.
+    //! @note Raw ADC is chip-generation dependent: the effective measurement range (ATTEN3) is 150-2450 mV on
+    //!       ESP32 classic, 0-2900 mV on ESP32-S3 and 0-3300 mV on ESP32-C6/H2/P4 (ADC Calibration Results table
+    //!       of each datasheet), so readings near full scale differ between chips. ESP32-S3 is also non-linear
+    //!       above ~2750 mV (Espressif measurement, not in the datasheet:
+    //!       https://developer.espressif.com/blog/2025/08/adc-performance/).
     //!       Use normalized() with calibrateDark()/calibrateBright() for portable 0-100% readings.
-    //!       See: https://developer.espressif.com/blog/2025/08/adc-performance/
     inline uint16_t analog() const
     {
         return !empty() ? latest().analog_raw : 0;

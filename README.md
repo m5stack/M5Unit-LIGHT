@@ -18,11 +18,18 @@ Unit Light is a light intensity detection sensor. It integrates a photoresistor 
 
 Raw ADC values from `unit.analog()` are **not directly comparable across boards** because ESP32 ADC characteristics differ by chip generation:
 
-- **ESP32 classic** (Core / Fire / StickCPlus etc.): the measurable range is about 150–2450 mV, so readings near full scale are compressed.
-- **ESP32-S3** (CoreS3 / StickS3 etc.): 0–2900 mV, non-linear above ~2750 mV.
+- **ESP32 classic** (Core / Fire / StickCPlus etc.): the effective measurement range is 150–2450 mV, so readings near full scale are compressed.
+- **ESP32-S3** (CoreS3 / StickS3 etc.): 0–2900 mV, non-linear above ~2750 mV (\*).
 - **ESP32-C6 / -H2 / -P4** (NanoC6 / NanoH2 / Tab5): 0–3300 mV.
 
-Reference: [Espressif Developer Blog — Comparing ADC Performance of Espressif SoCs (2025-08)](https://developer.espressif.com/blog/2025/08/adc-performance/)
+The ranges are the effective measurement range at the highest attenuation (ATTEN3) in the ADC Calibration Results table of each datasheet:
+[ESP32](https://documentation.espressif.com/esp32_datasheet_en.pdf) (v5.3, Table 4-4),
+[ESP32-S3](https://documentation.espressif.com/esp32-s3_datasheet_en.pdf) (v2.2, Table 5-6),
+[ESP32-C6](https://documentation.espressif.com/esp32-c6_datasheet_en.pdf) (v1.5, Table 5-6),
+[ESP32-H2](https://documentation.espressif.com/esp32-h2_datasheet_en.pdf) (v1.3, Table 5-5),
+[ESP32-P4](https://documentation.espressif.com/esp32-p4_datasheet_en.pdf) (v0.7, Table 5-6).
+
+(\*) Measured by Espressif, not in the datasheet: [Espressif Developer Blog — Comparing ADC Performance of Espressif SoCs (2025-08)](https://developer.espressif.com/blog/2025/08/adc-performance/)
 
 **Always calibrate per board** via `unit.calibrateDark()` / `unit.calibrateBright()` (BtnA click / hold in `PlotToSerial` example) so that `unit.normalized()` returns a portable 0–100 % value regardless of chip.
 
