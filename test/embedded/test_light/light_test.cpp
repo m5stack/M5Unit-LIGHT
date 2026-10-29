@@ -22,11 +22,11 @@ namespace {
 // Generous tolerance for ADC sampling jitter on ESP32-class targets.
 constexpr uint32_t INTERVAL_MARGIN_MS{10U};
 
-uint32_t lower_bound(uint32_t expected)
+uint32_t lower_bound(const uint32_t expected)
 {
     return expected > INTERVAL_MARGIN_MS ? expected - INTERVAL_MARGIN_MS : 0U;
 }
-uint32_t upper_bound(uint32_t expected)
+uint32_t upper_bound(const uint32_t expected)
 {
     return expected + INTERVAL_MARGIN_MS;
 }
