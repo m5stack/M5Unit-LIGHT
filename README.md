@@ -18,15 +18,15 @@ Unit Light is a light intensity detection sensor. It integrates a photoresistor 
 
 Raw ADC values from `unit.analog()` are **not directly comparable across boards** because ESP32 ADC characteristics differ by chip generation:
 
-- **ESP32 classic** (Core / Fire / StickCPlus 等): ATTEN_DB_11 is non-linear above ~2.45 V; dark readings tend to saturate near 4095 due to ADC compression, not true full-scale.
-- **ESP32-C6 / -H2 / -S3 / -P4** (NanoC6 / NanoH2 / CoreS3 / StickS3 / Tab5): ATTEN_DB_12 is linear across 0–3.3 V; the same physical light level yields a lower raw value (~3900) than on ESP32 classic — this is the more accurate reading.
+- **ESP32 classic** (Core / Fire / StickCPlus etc.): the measurable range is about 150–2450 mV, so readings near full scale are compressed.
+- **ESP32-S3** (CoreS3 / StickS3 etc.): 0–2900 mV, non-linear above ~2750 mV.
+- **ESP32-C6 / -H2 / -P4** (NanoC6 / NanoH2 / Tab5): 0–3300 mV.
 
 Reference: [Espressif Developer Blog — Comparing ADC Performance of Espressif SoCs (2025-08)](https://developer.espressif.com/blog/2025/08/adc-performance/)
 
 **Always calibrate per board** via `unit.calibrateDark()` / `unit.calibrateBright()` (BtnA click / hold in `PlotToSerial` example) so that `unit.normalized()` returns a portable 0–100 % value regardless of chip.
 
 ## Related Link
-See also examples using conventional methods here.
 
 - [Unit DLight & Datasheet](https://docs.m5stack.com/en/unit/DLight%20Unit)
 - [Hat DLight & Datasheet](https://docs.m5stack.com/en/hat/hat_dlight)
@@ -41,14 +41,6 @@ See also examples using conventional methods here.
 ## License
 
 - [M5Unit-LIGHT - MIT](LICENSE)
-
-## Support via [PbHub](https://docs.m5stack.com/en/unit/pbhub_1.1)
-
-|Unit|Support|Note|
-|---|---|---|
-|UnitLight|OK||
-
-See also [M5Unit-HUB](https://github.com/m5stack/M5Unit-HUB)
 
 ## Examples
 See also [examples/UnitUnified](examples/UnitUnified)
@@ -74,6 +66,9 @@ You must choose a define symbol for the unit you will use.
 
 > **NOTE:** The ESP-IDF native build (`idf.py`) targets ESP-IDF **5.1 or later** (5.x and 6.x).
 
+> **NOTE:** On NessoN1, the Hat port (ESP32-C6 LP I2C) needs ESP-IDF **5.3 or later**
+> (Arduino: Arduino-ESP32 3.2 or later).
+
 - UnitDLight / HatDLight (PlotToSerial)  
 Choose the unit with `idf.py menuconfig` → `M5Unit-LIGHT example` → `Target unit`
 (`Unit DLight` is the default).
@@ -86,8 +81,22 @@ idf.py menuconfig
 idf.py build flash monitor
 ```
 
-- UnitLight (PlotToSerial / ViaPbHub)  
+- UnitDLight (ViaPaHub) / UnitLight (PlotToSerial / ViaPbHub)  
 These examples need no Kconfig choice. Build them directly in the same way.
+
+## Support via [PaHub](https://docs.m5stack.com/en/unit/Unit-PaHub%20v2.1)
+
+|Unit|Support|Note|
+|---|---|---|
+|UnitDLight|OK||
+
+## Support via [PbHub](https://docs.m5stack.com/en/unit/pbhub_1.1)
+
+|Unit|Support|Note|
+|---|---|---|
+|UnitLight|OK||
+
+See also the [ViaPaHub](examples/UnitUnified/UnitDLight/ViaPaHub) / [ViaPbHub](examples/UnitUnified/UnitLight/ViaPbHub) examples and [M5Unit-HUB](https://github.com/m5stack/M5Unit-HUB)
 
 ## Doxygen document
 [GitHub Pages](https://m5stack.github.io/M5Unit-LIGHT/)
