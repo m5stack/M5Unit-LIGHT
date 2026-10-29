@@ -26,6 +26,11 @@ Reference: [Espressif Developer Blog — Comparing ADC Performance of Espressif 
 
 **Always calibrate per board** via `unit.calibrateDark()` / `unit.calibrateBright()` (BtnA click / hold in `PlotToSerial` example) so that `unit.normalized()` returns a portable 0–100 % value regardless of chip.
 
+Board-specific wiring notes:
+
+- **Core Basic**: connect the unit to PortB on the M5GO bottom. PortA (G21 / G22) has no ADC on the analog pin.
+- **StampS3**: the analog input is on PortA G15, which is ADC2. On ESP32-S3, ADC2 reads can fail while Wi-Fi / Bluetooth is active.
+
 ## Related Link
 
 - [Unit DLight & Datasheet](https://docs.m5stack.com/en/unit/DLight%20Unit)
