@@ -5,7 +5,7 @@
  */
 /*!
   @file unit_Light_data.hpp
-  @brief UnitLight (SKU:U021) data types (Data struct)
+  @brief UnitLight (SKU:U021) data types (default values and Data struct)
 
   Header-only; does not depend on M5UnitComponent, so it can be included from native (non-ESP32) builds.
 */
@@ -26,6 +26,13 @@ namespace unit {
  */
 namespace light {
 
+///@name Default values
+///@{
+constexpr uint32_t DEFAULT_INTERVAL_MS{50};  //!< Default sampling interval (ms)
+constexpr uint16_t DEFAULT_DARK{0};          //!< Default dark reference (ADC value)
+constexpr uint16_t DEFAULT_BRIGHT{4095};     //!< Default bright reference (ADC value, 12-bit full scale)
+///@}
+
 /*!
   @struct Data
   @brief Measurement data group
@@ -33,8 +40,8 @@ namespace light {
 struct Data {
     uint16_t analog_raw{};  //!< Raw ADC value from the photoresistor path
     bool digital{};         //!< Comparator threshold output (active level is board-specific; check it on the board)
-    uint16_t dark{0};       //!< ADC reading captured when the sensor was covered (dark reference)
-    uint16_t bright{4095};  //!< ADC reading captured when the sensor was lit (bright reference)
+    uint16_t dark{DEFAULT_DARK};      //!< ADC reading captured when the sensor was covered (dark reference)
+    uint16_t bright{DEFAULT_BRIGHT};  //!< ADC reading captured when the sensor was lit (bright reference)
 
     /*!
       @brief Normalized brightness in 0..100 (%), where 0% = dark reference and 100% = bright reference

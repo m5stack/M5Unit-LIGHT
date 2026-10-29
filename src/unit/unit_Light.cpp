@@ -103,8 +103,8 @@ void UnitLight::setCalibration(const uint16_t dark, const uint16_t bright)
 
 void UnitLight::resetCalibration()
 {
-    _dark   = 0;
-    _bright = 4095;
+    _dark   = light::DEFAULT_DARK;
+    _bright = light::DEFAULT_BRIGHT;
 }
 
 bool UnitLight::start_periodic_measurement()

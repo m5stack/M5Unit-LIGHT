@@ -5,7 +5,7 @@
  */
 /*
   Pure-formula tests for Data structs (no hardware required).
-  Placed at test/ root so it is compiled for both embedded and native (sdl) test runs.
+  Placed at test/ root so it is compiled for both embedded and native (host) test runs.
 */
 #include <gtest/gtest.h>
 #include <unit/unit_BH1750FVI_data.hpp>
@@ -97,6 +97,20 @@ TEST(BH1750FVIData, LuxRawZeroIsZero)
 namespace {
 using LightData = m5::unit::light::Data;
 }  // namespace
+
+TEST(LightData, Defaults)
+{
+    // The defaults shared by Data, UnitLight::config_t and resetCalibration()
+    EXPECT_EQ(m5::unit::light::DEFAULT_INTERVAL_MS, 50U);
+    EXPECT_EQ(m5::unit::light::DEFAULT_DARK, 0U);
+    EXPECT_EQ(m5::unit::light::DEFAULT_BRIGHT, 4095U);
+
+    const LightData d{};
+    EXPECT_EQ(d.analog_raw, 0U);
+    EXPECT_FALSE(d.digital);
+    EXPECT_EQ(d.dark, m5::unit::light::DEFAULT_DARK);
+    EXPECT_EQ(d.bright, m5::unit::light::DEFAULT_BRIGHT);
+}
 
 TEST(LightData, NormalizedNormalPolarity)
 {

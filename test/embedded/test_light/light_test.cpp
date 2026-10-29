@@ -48,9 +48,9 @@ TEST(LightConfig, Defaults)
 {
     UnitLight::config_t cfg{};
     EXPECT_TRUE(cfg.start_periodic);
-    EXPECT_EQ(cfg.interval_ms, 50u);
-    EXPECT_EQ(cfg.dark, 0u);
-    EXPECT_EQ(cfg.bright, 4095u);
+    EXPECT_EQ(cfg.interval_ms, light::DEFAULT_INTERVAL_MS);
+    EXPECT_EQ(cfg.dark, light::DEFAULT_DARK);
+    EXPECT_EQ(cfg.bright, light::DEFAULT_BRIGHT);
 }
 
 // --- HW-in-loop tests (require GPIO adapter to be wired to U021) ---

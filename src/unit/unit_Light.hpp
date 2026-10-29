@@ -40,12 +40,12 @@ public:
     struct config_t {
         //! Start periodic measurement on begin?
         bool start_periodic{true};
-        //! Sampling interval in milliseconds
-        uint32_t interval_ms{50};
-        //! Dark reference used for normalization (default 0)
-        uint16_t dark{0};
-        //! Bright reference used for normalization (default 4095 for 12-bit ADC)
-        uint16_t bright{4095};
+        //! Sampling interval in milliseconds (default light::DEFAULT_INTERVAL_MS)
+        uint32_t interval_ms{light::DEFAULT_INTERVAL_MS};
+        //! Dark reference used for normalization (default light::DEFAULT_DARK)
+        uint16_t dark{light::DEFAULT_DARK};
+        //! Bright reference used for normalization (default light::DEFAULT_BRIGHT)
+        uint16_t bright{light::DEFAULT_BRIGHT};
     };
 
     /*! @brief Constructor
@@ -162,7 +162,7 @@ public:
         @param dark Dark reference (ADC value measured under covered sensor)
         @param bright Bright reference (ADC value measured under bright exposure) */
     void setCalibration(const uint16_t dark, const uint16_t bright);
-    /*! @brief Reset calibration (dark=0, bright=4095) */
+    /*! @brief Reset calibration (dark = light::DEFAULT_DARK (0), bright = light::DEFAULT_BRIGHT (4095)) */
     void resetCalibration();
 
     //! @brief Current dark reference
@@ -191,8 +191,8 @@ protected:
 protected:
     std::unique_ptr<m5::container::CircularBuffer<light::Data>> _data{};
     config_t _cfg{};
-    uint16_t _dark{0};
-    uint16_t _bright{4095};
+    uint16_t _dark{light::DEFAULT_DARK};
+    uint16_t _bright{light::DEFAULT_BRIGHT};
 };
 
 }  // namespace unit
