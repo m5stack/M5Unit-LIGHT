@@ -38,12 +38,7 @@ class TestBH1750FVI : public I2CComponentTestBase<UnitBH1750FVI> {
 protected:
     virtual UnitBH1750FVI* get_instance() override
     {
-        auto ptr{new m5::unit::UnitBH1750FVI()};
-        if (ptr) {
-            auto ccfg{ptr->component_config()};
-            ptr->component_config(ccfg);
-        }
-        return ptr;
+        return new m5::unit::UnitBH1750FVI();
     }
 
 #if defined(USING_HAT_DLIGHT)
@@ -73,6 +68,7 @@ TEST_F(TestBH1750FVI, BeginAppliesConfig)
     // Defaults: Resolution::High, mtreg == MTREG_DEFAULT
     EXPECT_EQ(unit->resolution(), Resolution::High);
     EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
+    // readMTreg() returns the cached value (same as mtreg())
     EXPECT_EQ(unit->readMTreg(), MTREG_DEFAULT);
 }
 
@@ -218,9 +214,32 @@ TEST_F(TestBH1750FVI, SensitivityFactorBounds)
     EXPECT_TRUE(unit->writeSensitivityFactor(SENSITIVITY_FACTOR_MAX));
     EXPECT_LE(unit->mtreg(), MTREG_MAX);
 
-    // Out of range must reject
+    // Out of range must reject and keep the current mtreg
+    const uint8_t before{unit->mtreg()};
     EXPECT_FALSE(unit->writeSensitivityFactor(SENSITIVITY_FACTOR_MIN - 0.1f));
     EXPECT_FALSE(unit->writeSensitivityFactor(SENSITIVITY_FACTOR_MAX + 0.1f));
+    EXPECT_EQ(unit->mtreg(), before);
+}
+
+// --- Out-of-range MTreg is rejected by start / single-shot / begin ---
+TEST_F(TestBH1750FVI, InvalidMTregRejected)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->startPeriodicMeasurement(Resolution::High, MTREG_MIN - 1));
+    EXPECT_FALSE(unit->startPeriodicMeasurement(Resolution::High, MTREG_MAX + 1));
+
+    Data d{};
+    EXPECT_FALSE(unit->measureSingleShot(d, Resolution::High, MTREG_MIN - 1));
+    EXPECT_FALSE(unit->measureSingleShot(d, Resolution::High, MTREG_MAX + 1));
+
+    auto cfg  = unit->config();
+    cfg.mtreg = MTREG_MIN - 1;
+    unit->config(cfg);
+    EXPECT_FALSE(unit->begin());
+    // Rejected by the range check: the cached state is unchanged
+    EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
+    EXPECT_FALSE(unit->inPeriodic());
 }
 
 // --- Single-shot measurement ---

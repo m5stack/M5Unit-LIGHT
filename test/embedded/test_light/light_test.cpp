@@ -42,7 +42,7 @@ protected:
 
 // --- pure-API tests (no hardware required) ---
 // NOTE: Data::normalized() formula tests live in test/data_test.cpp so they
-// run in both native (sdl) and embedded test sessions.
+// run in both native (host) and embedded test sessions.
 
 TEST(LightConfig, Defaults)
 {
@@ -95,13 +95,14 @@ TEST_F(TestLight, BeginAppliesNonDefaultPeriodicConfig)
 
     auto cfg           = unit->config();
     cfg.start_periodic = true;
-    cfg.interval_ms    = 50;  // short interval for quick verification
+    cfg.interval_ms    = 30;  // non-default, short for quick verification
     cfg.dark           = 100;
     cfg.bright         = 3000;
     unit->config(cfg);
     EXPECT_TRUE(unit->begin());
 
     EXPECT_TRUE(unit->inPeriodic());
+    EXPECT_EQ(unit->interval(), 30U);
     EXPECT_EQ(unit->dark(), 100u);
     EXPECT_EQ(unit->bright(), 3000u);
 
@@ -110,9 +111,6 @@ TEST_F(TestLight, BeginAppliesNonDefaultPeriodicConfig)
     EXPECT_EQ(result.update_count, 3U);
     EXPECT_GE(result.median(), lower_bound(result.expected_interval));
     EXPECT_LE(result.median(), upper_bound(result.expected_interval));
-
-    // Restore default calibration so subsequent tests are not affected
-    unit->resetCalibration();
 }
 
 TEST_F(TestLight, ConfigRoundTrip)
@@ -206,8 +204,8 @@ TEST_F(TestLight, NormalizedAfterCalibration)
     SCOPED_TRACE(ustr);
 
     unit->setCalibration(100, 3000);
-    EXPECT_EQ(unit->dark(), 100);
-    EXPECT_EQ(unit->bright(), 3000);
+    EXPECT_EQ(unit->dark(), 100u);
+    EXPECT_EQ(unit->bright(), 3000u);
 
     auto result = collect_periodic_measurements(unit.get(), 3);
     EXPECT_FALSE(result.timed_out);
@@ -216,15 +214,15 @@ TEST_F(TestLight, NormalizedAfterCalibration)
     EXPECT_LE(result.median(), upper_bound(result.expected_interval));
 
     // Persistence: measurement cycles must not clobber calibration.
-    EXPECT_EQ(unit->dark(), 100);
-    EXPECT_EQ(unit->bright(), 3000);
+    EXPECT_EQ(unit->dark(), 100u);
+    EXPECT_EQ(unit->bright(), 3000u);
 
     // Persistence across accessor calls too.
     (void)unit->analog();
     (void)unit->digital();
     (void)unit->normalized();
-    EXPECT_EQ(unit->dark(), 100);
-    EXPECT_EQ(unit->bright(), 3000);
+    EXPECT_EQ(unit->dark(), 100u);
+    EXPECT_EQ(unit->bright(), 3000u);
 
     const float n{unit->normalized()};
     EXPECT_FALSE(std::isnan(n));
