@@ -40,7 +40,9 @@ void setup_canvas()
     const int32_t text_size = std::max<int32_t>(1, lcd.width() / (12 * 6));
     canvas.setPsram(false);
     canvas.setColorDepth(1);  // Two colors: background and text
-    canvas.createSprite(lcd.width(), 8 * text_size);
+    if (!canvas.createSprite(lcd.width(), 8 * text_size)) {
+        M5_LOGE("Failed to create canvas sprite");
+    }
     canvas.setPaletteColor(0, TFT_DARKGREEN);
     canvas.setPaletteColor(1, TFT_YELLOW);
     canvas.setTextSize(text_size);
