@@ -13,12 +13,14 @@
 #ifndef M5_UNIT_LIGHT_UNIT_BH1750FVI_HPP
 #define M5_UNIT_LIGHT_UNIT_BH1750FVI_HPP
 
-#include <M5UnitComponent.hpp>
-#include <m5_utility/stl/extension.hpp>
-#include <m5_utility/container/circular_buffer.hpp>
-#include "unit_BH1750FVI_data.hpp"  // Mode, Resolution, MTREG_* constants, Data (with inline lux())
 #include <cstdint>
 #include <limits>
+#include <memory>  // std::unique_ptr
+
+#include <M5UnitComponent.hpp>
+#include <m5_utility/container/circular_buffer.hpp>
+
+#include "unit_BH1750FVI_data.hpp"  // Mode, Resolution, MTREG_* constants, Data (with inline lux())
 
 namespace m5 {
 namespace unit {
@@ -43,8 +45,8 @@ constexpr uint8_t ONE_TIME_H_RES_MODE2{0x21};
 constexpr uint8_t ONE_TIME_L_RES_MODE{0x23};  // NOTE: same hex as slave address, not related
 
 // MTreg opcodes (bitmask bases; combine with mtreg bits)
-constexpr uint8_t CHANGE_MEASUREMENT_TIME_HIGH{0x40};  //!< OR with ((mtreg >> 5) & 0x07)
-constexpr uint8_t CHANGE_MEASUREMENT_TIME_LOW{0x60};   //!< OR with (mtreg & 0x1F)
+constexpr uint8_t CHANGE_MEASUREMENT_TIME_HIGH{0x40};  // OR with ((mtreg >> 5) & 0x07)
+constexpr uint8_t CHANGE_MEASUREMENT_TIME_LOW{0x60};   // OR with (mtreg & 0x1F)
 }  // namespace command
 ///@endcond
 
@@ -127,6 +129,10 @@ public:
     {
         return !empty() ? latest().raw : 0;
     }
+    ///@}
+
+    ///@name Current settings
+    ///@{
     //! @brief Resolution currently in effect
     //! @return Current resolution
     inline bh1750fvi::Resolution resolution() const
@@ -144,8 +150,10 @@ public:
     ///@name Periodic measurement
     ///@{
     /*!
-      @brief Start periodic measurement in the current settings
+      @brief Start periodic measurement with the resolution / mtreg of config()
       @return True if successful
+      @warning Blocks until the first conversion completes (measurement time + 20 ms;
+      up to ~700 ms with High/High2 and mtreg 254)
     */
     inline bool startPeriodicMeasurement()
     {
@@ -156,6 +164,8 @@ public:
       @param resolution Resolution
       @param mtreg MTreg value (31..254)
       @return True if successful
+      @warning Blocks until the first conversion completes (measurement time + 20 ms;
+      up to ~700 ms with High/High2 and mtreg 254)
     */
     inline bool startPeriodicMeasurement(const bh1750fvi::Resolution resolution, const uint8_t mtreg)
     {
@@ -177,9 +187,11 @@ public:
       @brief Measure single-shot
       @param[out] data Measured data
       @param resolution Resolution to use (default: High)
-      @param mtreg MTreg value (default: 69)
+      @param mtreg MTreg value (31..254, default: 69)
       @return True if successful
       @warning Blocks until the measurement completes (up to 24 ms (Low) or 180 ms (High/High2), scaled by mtreg/69)
+      @note Returns false while periodic measurement is running
+      @note The mtreg is kept after the measurement (mtreg() / readMTreg() return it)
      */
     bool measureSingleShot(bh1750fvi::Data& data, const bh1750fvi::Resolution resolution = bh1750fvi::Resolution::High,
                            const uint8_t mtreg = bh1750fvi::MTREG_DEFAULT);
@@ -216,7 +228,8 @@ public:
         @return True if successful */
     bool powerOn();
     /*! @brief Write POWER_DOWN opcode
-        @return True if successful */
+        @return True if successful
+        @note Also stops periodic measurement (inPeriodic() becomes false) */
     bool powerDown();
     /*! @brief Write RESET opcode (clears data register; requires POWER_ON state)
         @return True if successful */
