@@ -50,6 +50,11 @@ const types::attr_t UnitBH1750FVI::attr{attribute::AccessI2C};
 
 bool UnitBH1750FVI::begin()
 {
+    if (_cfg.mtreg < MTREG_MIN || _cfg.mtreg > MTREG_MAX) {
+        M5_LIB_LOGE("Invalid mtreg %u", _cfg.mtreg);
+        return false;
+    }
+
     auto ssize{stored_size()};
     assert(ssize && "stored_size must be greater than zero");
     if (ssize != _data->capacity()) {
@@ -79,11 +84,6 @@ bool UnitBH1750FVI::begin()
 
     if (!softReset()) {
         M5_LIB_LOGE("Failed to reset");
-        return false;
-    }
-
-    if (_cfg.mtreg < MTREG_MIN || _cfg.mtreg > MTREG_MAX) {
-        M5_LIB_LOGE("Invalid mtreg %u", _cfg.mtreg);
         return false;
     }
 
