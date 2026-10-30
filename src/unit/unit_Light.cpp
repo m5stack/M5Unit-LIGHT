@@ -63,7 +63,7 @@ void UnitLight::update(const bool force)
 {
     _updated = false;
     if (inPeriodic()) {
-        elapsed_time_t at{m5::utility::millis()};
+        const elapsed_time_t at{m5::utility::millis()};
         if (force || !_latest || (at - _latest) >= _interval) {
             light::Data d{};
             if (read_measurement(d)) {
@@ -103,8 +103,8 @@ void UnitLight::setCalibration(const uint16_t dark, const uint16_t bright)
 
 void UnitLight::resetCalibration()
 {
-    _dark   = 0;
-    _bright = 4095;
+    _dark   = light::DEFAULT_DARK;
+    _bright = light::DEFAULT_BRIGHT;
 }
 
 bool UnitLight::start_periodic_measurement()

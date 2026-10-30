@@ -1,0 +1,18 @@
+# "Target unit" selection for the UnitDLight examples (ESP-IDF: PlotToSerial).
+# rsource'd from each example's main/Kconfig.projbuild. The chosen CONFIG_EXAMPLE_* is mapped to the
+# source-level macro in common/variant.cmake (shared with the Arduino build).
+menu "M5Unit-LIGHT example"
+
+choice EXAMPLE_DLIGHT_VARIANT
+    prompt "Target unit"
+    default EXAMPLE_USING_UNIT_DLIGHT
+    help
+        Which BH1750FVI product this example uses.
+
+    config EXAMPLE_USING_UNIT_DLIGHT
+        bool "Unit DLight (U136, GROVE)"
+    config EXAMPLE_USING_HAT_DLIGHT
+        bool "Hat DLight (U134, StickC-family hat port)"
+endchoice
+
+endmenu

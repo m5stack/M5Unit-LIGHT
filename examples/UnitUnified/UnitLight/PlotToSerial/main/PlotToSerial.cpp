@@ -22,7 +22,7 @@ m5::unit::UnitUnified Units;
 m5::unit::UnitLight unit;
 
 constexpr uint32_t DRAW_INTERVAL_MS{200};
-uint32_t last_draw_ms{0};
+m5::utility::elapsed_time_t last_draw_ms{0};
 
 void draw_status()
 {
@@ -114,7 +114,7 @@ void loop()
         M5.Log.printf(">analog:%u\n>digital:%u\n>normalized:%.2f\n", unit.analog(), unit.digital() ? 1u : 0u,
                       unit.normalized());
         // Throttle LCD redraws to avoid flicker from periodic measurements.
-        const uint32_t now{m5::utility::millis()};
+        const m5::utility::elapsed_time_t now{m5::utility::millis()};
         if (now - last_draw_ms >= DRAW_INTERVAL_MS) {
             last_draw_ms = now;
             need_redraw  = true;
@@ -137,3 +137,36 @@ void loop()
         draw_status();
     }
 }
+
+#if !defined(ARDUINO)
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_timer.h>
+
+#if CONFIG_FREERTOS_UNICORE
+// Single-core SoCs: run loop() back-to-back, but every ~2 s yield a 5 ms slice so the IDLE task
+// runs and feeds the task watchdog (default 5 s).
+static inline void feedIdleTaskPeriodically(void)
+{
+    constexpr uint32_t FEED_INTERVAL_MS{2000};
+    constexpr TickType_t FEED_SLEEP_TICKS{pdMS_TO_TICKS(5)};
+    static uint32_t s_last_feed_ms{};
+    const uint32_t now_ms{static_cast<uint32_t>(esp_timer_get_time() / 1000)};
+    if (now_ms - s_last_feed_ms >= FEED_INTERVAL_MS) {
+        s_last_feed_ms = now_ms;
+        vTaskDelay(FEED_SLEEP_TICKS);
+    }
+}
+#endif
+
+extern "C" void app_main(void)
+{
+    setup();
+    for (;;) {
+#if CONFIG_FREERTOS_UNICORE
+        feedIdleTaskPeriodically();
+#endif
+        loop();
+    }
+}
+#endif

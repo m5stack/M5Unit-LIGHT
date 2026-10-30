@@ -7,7 +7,6 @@
   UnitTest for UnitBH1750FVI (Unit DLight / Hat DLight)
 */
 #include <gtest/gtest.h>
-#include <driver/gpio.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
 #include <googletest/test_template.hpp>
@@ -24,11 +23,11 @@ namespace {
 // SoftwareI2C/cache-miss jitter on NessoN1 considered.
 constexpr uint32_t INTERVAL_MARGIN_MS{10U};
 
-uint32_t lower_bound(uint32_t expected)
+uint32_t lower_bound(const uint32_t expected)
 {
     return expected > INTERVAL_MARGIN_MS ? expected - INTERVAL_MARGIN_MS : 0U;
 }
-uint32_t upper_bound(uint32_t expected)
+uint32_t upper_bound(const uint32_t expected)
 {
     return expected + INTERVAL_MARGIN_MS;
 }
@@ -38,21 +37,13 @@ class TestBH1750FVI : public I2CComponentTestBase<UnitBH1750FVI> {
 protected:
     virtual UnitBH1750FVI* get_instance() override
     {
-        auto ptr{new m5::unit::UnitBH1750FVI()};
-        if (ptr) {
-            auto ccfg{ptr->component_config()};
-            ptr->component_config(ccfg);
-        }
-        return ptr;
+        return new m5::unit::UnitBH1750FVI();
     }
 
 #if defined(USING_HAT_DLIGHT)
     virtual bool begin() override
     {
         // HatDLight: NessoN1 uses Wire1, other StickC-family boards use Wire.
-        // Drive SCL as OUTPUT before bus init (some boards leave it floating on reset).
-        const auto pins = m5::unit::wiring::hatI2CPins();
-        gpio_set_direction(static_cast<gpio_num_t>(pins.scl), GPIO_MODE_OUTPUT);
         return m5::unit::wiring::addHatI2C(Units, *unit, unit->component_config().clock) && Units.begin();
     }
 #endif
@@ -73,7 +64,6 @@ TEST_F(TestBH1750FVI, BeginAppliesConfig)
     // Defaults: Resolution::High, mtreg == MTREG_DEFAULT
     EXPECT_EQ(unit->resolution(), Resolution::High);
     EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
-    EXPECT_EQ(unit->readMTreg(), MTREG_DEFAULT);
 }
 
 TEST_F(TestBH1750FVI, BeginAppliesNonDefaultConfig)
@@ -175,6 +165,35 @@ TEST_F(TestBH1750FVI, WriteMTregInPeriodic)
     EXPECT_LE(result.median(), upper_bound(result.expected_interval));
 }
 
+// --- begin() rewrites MTreg (RESET does not clear it on the chip) ---
+TEST_F(TestBH1750FVI, BeginRewritesMTreg)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_TRUE(unit->powerOn());
+    EXPECT_TRUE(unit->writeMTreg(MTREG_MAX));
+
+    auto cfg           = unit->config();
+    cfg.start_periodic = false;
+    cfg.mtreg          = MTREG_DEFAULT;
+    unit->config(cfg);
+    EXPECT_TRUE(unit->begin());
+    EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
+
+    // mtreg equals the cache, so no MTreg write happens here: the reading uses whatever the chip holds
+    Data after_begin{};
+    EXPECT_TRUE(unit->measureSingleShot(after_begin, Resolution::High, MTREG_DEFAULT));
+    // Force a real MTreg write of the default for reference
+    Data reference{};
+    EXPECT_TRUE(unit->measureSingleShot(reference, Resolution::High, MTREG_DEFAULT + 1));
+    EXPECT_TRUE(unit->measureSingleShot(reference, Resolution::High, MTREG_DEFAULT));
+    // At MTREG_MAX (254/69) the count would be ~3.7x the reference, or 0 if the conversion is not finished
+    // within the MTREG_DEFAULT wait; both fail the two-sided bound below (assumes stable lighting)
+    EXPECT_GE(reference.raw, 20U) << "Needs room light on the sensor (do not cover it)";
+    EXPECT_GE(after_begin.raw * 2U + 10U, reference.raw);
+    EXPECT_LE(after_begin.raw, reference.raw * 2U + 10U);
+}
+
 // --- SensitivityFactor bounds ---
 TEST_F(TestBH1750FVI, SensitivityFactorBounds)
 {
@@ -189,9 +208,32 @@ TEST_F(TestBH1750FVI, SensitivityFactorBounds)
     EXPECT_TRUE(unit->writeSensitivityFactor(SENSITIVITY_FACTOR_MAX));
     EXPECT_LE(unit->mtreg(), MTREG_MAX);
 
-    // Out of range must reject
+    // Out of range must reject and keep the current mtreg
+    const uint8_t before{unit->mtreg()};
     EXPECT_FALSE(unit->writeSensitivityFactor(SENSITIVITY_FACTOR_MIN - 0.1f));
     EXPECT_FALSE(unit->writeSensitivityFactor(SENSITIVITY_FACTOR_MAX + 0.1f));
+    EXPECT_EQ(unit->mtreg(), before);
+}
+
+// --- Out-of-range MTreg is rejected by start / single-shot / begin ---
+TEST_F(TestBH1750FVI, InvalidMTregRejected)
+{
+    SCOPED_TRACE(ustr);
+    EXPECT_TRUE(unit->stopPeriodicMeasurement());
+    EXPECT_FALSE(unit->startPeriodicMeasurement(Resolution::High, MTREG_MIN - 1));
+    EXPECT_FALSE(unit->startPeriodicMeasurement(Resolution::High, MTREG_MAX + 1));
+
+    Data d{};
+    EXPECT_FALSE(unit->measureSingleShot(d, Resolution::High, MTREG_MIN - 1));
+    EXPECT_FALSE(unit->measureSingleShot(d, Resolution::High, MTREG_MAX + 1));
+
+    auto cfg  = unit->config();
+    cfg.mtreg = MTREG_MIN - 1;
+    unit->config(cfg);
+    EXPECT_FALSE(unit->begin());
+    // Rejected by the range check: the cached state is unchanged
+    EXPECT_EQ(unit->mtreg(), MTREG_DEFAULT);
+    EXPECT_FALSE(unit->inPeriodic());
 }
 
 // --- Single-shot measurement ---

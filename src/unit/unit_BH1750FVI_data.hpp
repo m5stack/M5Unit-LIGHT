@@ -7,9 +7,7 @@
   @file unit_BH1750FVI_data.hpp
   @brief BH1750FVI data types (enums, constants, Data struct)
 
-  Split out from unit_BH1750FVI.hpp so pure formula tests can include it
-  without pulling in M5UnitComponent (which is ESP32-only). Native (SDL)
-  builds link data_test.cpp against these inline definitions.
+  Header-only; does not depend on M5UnitComponent, so it can be included from native (non-ESP32) builds.
 */
 #ifndef M5_UNIT_LIGHT_UNIT_BH1750FVI_DATA_HPP
 #define M5_UNIT_LIGHT_UNIT_BH1750FVI_DATA_HPP

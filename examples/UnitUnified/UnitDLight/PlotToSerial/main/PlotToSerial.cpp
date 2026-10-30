@@ -12,13 +12,13 @@
   BtnA hold:  cycle resolution Low -> High -> High2 (also re-measures
               for instant feedback in either mode)
 */
-#include <driver/gpio.h>
+#include <cmath>   // std::isnan
+#include <limits>  // std::numeric_limits
+
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <M5UnitUnifiedLIGHT.h>
 #include <wiring/m5_unit_unified_wiring.hpp>  // Board-aware connection helpers (include last)
-#include <cmath>                              // std::isnan
-#include <limits>                             // std::numeric_limits
 
 // *************************************************************
 // Choose one define symbol to match the unit you are using
@@ -31,9 +31,9 @@
 #endif
 
 #if defined(USING_UNIT_DLIGHT)
-#pragma message "Using UnitDLight"
+#pragma message("Using UnitDLight")
 #elif defined(USING_HAT_DLIGHT)
-#pragma message "Using HatDLight"
+#pragma message("Using HatDLight")
 #else
 #error Please choose unit!
 #endif
@@ -52,7 +52,7 @@ m5::unit::HatDLight unit;
 #endif
 
 constexpr uint32_t DRAW_INTERVAL_MS{50};
-uint32_t last_draw_ms{0};
+m5::utility::elapsed_time_t last_draw_ms{0};
 float last_singleshot_lux{std::numeric_limits<float>::quiet_NaN()};
 uint16_t last_singleshot_raw{0};
 Resolution current_resolution{Resolution::Low};  // matches setup() config
@@ -177,16 +177,13 @@ void setup()
 
 #if defined(USING_HAT_DLIGHT)
     // HatDLight: NessoN1 uses Wire1, other StickC-family boards use Wire.
-    // Drive SCL as OUTPUT before bus init (some boards leave it floating on reset).
-    const auto pins = m5::unit::wiring::hatI2CPins();
-    gpio_set_direction(static_cast<gpio_num_t>(pins.scl), GPIO_MODE_OUTPUT);
-    if (!m5::unit::wiring::addHatI2C(Units, unit, 400 * 1000U) || !Units.begin()) {
+    if (!m5::unit::wiring::addHatI2C(Units, unit) || !Units.begin()) {
         M5_LOGE("Failed to begin");
         m5::unit::wiring::failStop();
     }
 #else
     // UnitDLight: NessoN1 -> SoftwareI2C (M5HAL), NanoC6 / NanoH2 -> M5.Ex_I2C, others -> Wire
-    if (!m5::unit::wiring::addI2C(Units, unit, 400 * 1000U) || !Units.begin()) {
+    if (!m5::unit::wiring::addI2C(Units, unit) || !Units.begin()) {
         M5_LOGE("Failed to begin");
         m5::unit::wiring::failStop();
     }
@@ -219,7 +216,7 @@ void loop()
     if (unit.updated()) {
         M5.Log.printf(">lux:%.2f\n>raw:%u\n", unit.lux(), unit.raw());
         // Throttle LCD redraws to avoid flicker from periodic measurements.
-        const uint32_t now{m5::utility::millis()};
+        const m5::utility::elapsed_time_t now{m5::utility::millis()};
         if (now - last_draw_ms >= DRAW_INTERVAL_MS) {
             last_draw_ms = now;
             need_redraw  = true;
@@ -268,3 +265,36 @@ void loop()
         draw_status();
     }
 }
+
+#if !defined(ARDUINO)
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_timer.h>
+
+#if CONFIG_FREERTOS_UNICORE
+// Single-core SoCs: run loop() back-to-back, but every ~2 s yield a 5 ms slice so the IDLE task
+// runs and feeds the task watchdog (default 5 s).
+static inline void feedIdleTaskPeriodically(void)
+{
+    constexpr uint32_t FEED_INTERVAL_MS{2000};
+    constexpr TickType_t FEED_SLEEP_TICKS{pdMS_TO_TICKS(5)};
+    static uint32_t s_last_feed_ms{};
+    const uint32_t now_ms{static_cast<uint32_t>(esp_timer_get_time() / 1000)};
+    if (now_ms - s_last_feed_ms >= FEED_INTERVAL_MS) {
+        s_last_feed_ms = now_ms;
+        vTaskDelay(FEED_SLEEP_TICKS);
+    }
+}
+#endif
+
+extern "C" void app_main(void)
+{
+    setup();
+    for (;;) {
+#if CONFIG_FREERTOS_UNICORE
+        feedIdleTaskPeriodically();
+#endif
+        loop();
+    }
+}
+#endif

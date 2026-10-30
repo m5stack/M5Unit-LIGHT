@@ -11,11 +11,13 @@
         "url": "https://github.com/m5stack/M5Unit-LIGHT.git"
     },
     "dependencies": {
-        "m5stack/M5UnitUnified": ">=0.5.5"
+        "m5stack/M5UnitUnified": ">=0.6.0",
+        "m5stack/M5Utility": ">=0.3.0"
     },
-    "version": "0.0.2",
+    "version": "0.1.0",
     "frameworks": [
-        "arduino"
+        "arduino",
+        "espidf"
     ],
     "platforms": [
         "espressif32"
