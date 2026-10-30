@@ -15,7 +15,6 @@
 #include <cmath>   // std::isnan
 #include <limits>  // std::numeric_limits
 
-#include <driver/gpio.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.h>
 #include <M5UnitUnifiedLIGHT.h>
@@ -178,9 +177,6 @@ void setup()
 
 #if defined(USING_HAT_DLIGHT)
     // HatDLight: NessoN1 uses Wire1, other StickC-family boards use Wire.
-    // Drive SCL as OUTPUT before bus init (some boards leave it floating on reset).
-    const auto pins = m5::unit::wiring::hatI2CPins();
-    gpio_set_direction(static_cast<gpio_num_t>(pins.scl), GPIO_MODE_OUTPUT);
     if (!m5::unit::wiring::addHatI2C(Units, unit) || !Units.begin()) {
         M5_LOGE("Failed to begin");
         m5::unit::wiring::failStop();

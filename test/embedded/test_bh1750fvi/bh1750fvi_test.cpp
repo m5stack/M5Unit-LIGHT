@@ -7,7 +7,6 @@
   UnitTest for UnitBH1750FVI (Unit DLight / Hat DLight)
 */
 #include <gtest/gtest.h>
-#include <driver/gpio.h>
 #include <M5Unified.h>
 #include <M5UnitUnified.hpp>
 #include <googletest/test_template.hpp>
@@ -45,9 +44,6 @@ protected:
     virtual bool begin() override
     {
         // HatDLight: NessoN1 uses Wire1, other StickC-family boards use Wire.
-        // Drive SCL as OUTPUT before bus init (some boards leave it floating on reset).
-        const auto pins = m5::unit::wiring::hatI2CPins();
-        gpio_set_direction(static_cast<gpio_num_t>(pins.scl), GPIO_MODE_OUTPUT);
         return m5::unit::wiring::addHatI2C(Units, *unit, unit->component_config().clock) && Units.begin();
     }
 #endif
