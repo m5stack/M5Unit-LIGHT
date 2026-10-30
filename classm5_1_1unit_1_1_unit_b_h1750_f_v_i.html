@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.0.2 git rev:6d734f0</span>
+   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.1.0 git rev:1ddbe92</span>
    </div>
   </td>
  </tr>
@@ -153,6 +153,7 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><b>~UnitBH1750FVI</b>
 <tr class="memitem:a7d469dda5e5bb301b480dda29f3b6fb8" id="r_a7d469dda5e5bb301b480dda29f3b6fb8"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7d469dda5e5bb301b480dda29f3b6fb8">raw</a> () const</td></tr>
 <tr class="memdesc:a7d469dda5e5bb301b480dda29f3b6fb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Latest raw value.  <br /></td></tr>
 <tr class="separator:a7d469dda5e5bb301b480dda29f3b6fb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Current settings</div></td></tr>
 <tr class="memitem:a9f32ad42c23b04d66ff41e29bebeca50" id="r_a9f32ad42c23b04d66ff41e29bebeca50"><td class="memItemLeft" align="right" valign="top"><a class="el" href="unit___b_h1750_f_v_i__data_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55b">bh1750fvi::Resolution</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f32ad42c23b04d66ff41e29bebeca50">resolution</a> () const</td></tr>
 <tr class="memdesc:a9f32ad42c23b04d66ff41e29bebeca50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolution currently in effect.  <br /></td></tr>
 <tr class="separator:a9f32ad42c23b04d66ff41e29bebeca50"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -161,7 +162,7 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><b>~UnitBH1750FVI</b>
 <tr class="separator:a5c2dcd0dccdfd6d62f9856672f391250"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Periodic measurement</div></td></tr>
 <tr class="memitem:a4a227be3af4cec713294683fef40bd2d" id="r_a4a227be3af4cec713294683fef40bd2d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4a227be3af4cec713294683fef40bd2d">startPeriodicMeasurement</a> ()</td></tr>
-<tr class="memdesc:a4a227be3af4cec713294683fef40bd2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start periodic measurement in the current settings.  <br /></td></tr>
+<tr class="memdesc:a4a227be3af4cec713294683fef40bd2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start periodic measurement with the resolution / mtreg of <a class="el" href="#af99ed1ec95043e8823521bf3a05e2f45" title="Gets the configuration.">config()</a>  <br /></td></tr>
 <tr class="separator:a4a227be3af4cec713294683fef40bd2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f41ab3f4bab0b1121cac12ca382e388" id="r_a2f41ab3f4bab0b1121cac12ca382e388"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2f41ab3f4bab0b1121cac12ca382e388">startPeriodicMeasurement</a> (const <a class="el" href="unit___b_h1750_f_v_i__data_8hpp.html#a7c614d0b86ad9d6e61fb0441c61ae55b">bh1750fvi::Resolution</a> <a class="el" href="#a9f32ad42c23b04d66ff41e29bebeca50">resolution</a>, const uint8_t <a class="el" href="#a5c2dcd0dccdfd6d62f9856672f391250">mtreg</a>)</td></tr>
 <tr class="memdesc:a2f41ab3f4bab0b1121cac12ca382e388"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start periodic measurement.  <br /></td></tr>
@@ -430,12 +431,15 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_mtreg</b> {<a cla
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">data</td><td>Measured data </td></tr>
     <tr><td class="paramdir"></td><td class="paramname">resolution</td><td>Resolution to use (default: High) </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">mtreg</td><td>MTreg value (default: 69) </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">mtreg</td><td>MTreg value (31..254, default: 69) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
 <dl class="section warning"><dt>Warning</dt><dd>Blocks until the measurement completes (up to 24 ms (Low) or 180 ms (High/High2), scaled by mtreg/69) </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Returns false while periodic measurement is running </dd>
+<dd>
+The mtreg is kept after the measurement (<a class="el" href="#a5c2dcd0dccdfd6d62f9856672f391250" title="MTreg currently in effect.">mtreg()</a> returns it) </dd></dl>
 
 </div>
 </div>
@@ -484,6 +488,7 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_mtreg</b> {<a cla
 
 <p>Write POWER_DOWN opcode. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Also stops periodic measurement (inPeriodic() becomes false) </dd></dl>
 
 </div>
 </div>
@@ -560,6 +565,7 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_mtreg</b> {<a cla
 
 <p>Gets the current MTreg cache. </p>
 <dl class="section return"><dt>Returns</dt><dd>Current MTreg </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated</a></b></dt><dd>MTreg is write-only on the chip and this returns the cached value; use <a class="el" href="#a5c2dcd0dccdfd6d62f9856672f391250" title="MTreg currently in effect.">mtreg()</a> instead </dd></dl>
 
 </div>
 </div>
@@ -634,8 +640,9 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_mtreg</b> {<a cla
 </table>
 </div><div class="memdoc">
 
-<p>Start periodic measurement in the current settings. </p>
+<p>Start periodic measurement with the resolution / mtreg of <a class="el" href="#af99ed1ec95043e8823521bf3a05e2f45" title="Gets the configuration.">config()</a> </p>
 <dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Blocks until the first conversion completes (measurement time + 20 ms; up to ~700 ms with High/High2 and mtreg 254) </dd></dl>
 
 </div>
 </div>
@@ -675,6 +682,7 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>_mtreg</b> {<a cla
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if successful </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Blocks until the first conversion completes (measurement time + 20 ms; up to ~700 ms with High/High2 and mtreg 254) </dd></dl>
 
 </div>
 </div>

@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.0.2 git rev:6d734f0</span>
+   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.1.0 git rev:1ddbe92</span>
    </div>
   </td>
  </tr>
@@ -123,14 +123,14 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>analog_raw</b> {}
 <tr class="separator:afab914c55ff6cc2b7e7dd0e59c0c1ada"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4667b2f9d50d2d1a10bb37949c701297" id="r_a4667b2f9d50d2d1a10bb37949c701297"><td class="memItemLeft" align="right" valign="top"><a id="a4667b2f9d50d2d1a10bb37949c701297" name="a4667b2f9d50d2d1a10bb37949c701297"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>digital</b> {}</td></tr>
-<tr class="memdesc:a4667b2f9d50d2d1a10bb37949c701297"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparator threshold output (active level is board-specific; verify with calibration) <br /></td></tr>
+<tr class="memdesc:a4667b2f9d50d2d1a10bb37949c701297"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparator threshold output (active level is board-specific; check it on the board) <br /></td></tr>
 <tr class="separator:a4667b2f9d50d2d1a10bb37949c701297"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6d6fe4fef82e3c9093a3050fd8c4227" id="r_ae6d6fe4fef82e3c9093a3050fd8c4227"><td class="memItemLeft" align="right" valign="top"><a id="ae6d6fe4fef82e3c9093a3050fd8c4227" name="ae6d6fe4fef82e3c9093a3050fd8c4227"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>dark</b> {0}</td></tr>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>dark</b> {<a class="el" href="unit___light__data_8hpp.html#a7ae5ff826f4a9174a4e6c8c65dfa2cd0">DEFAULT_DARK</a>}</td></tr>
 <tr class="memdesc:ae6d6fe4fef82e3c9093a3050fd8c4227"><td class="mdescLeft">&#160;</td><td class="mdescRight">ADC reading captured when the sensor was covered (dark reference) <br /></td></tr>
 <tr class="separator:ae6d6fe4fef82e3c9093a3050fd8c4227"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc731a5cdd518c8a6cc2f5db6d6894c0" id="r_abc731a5cdd518c8a6cc2f5db6d6894c0"><td class="memItemLeft" align="right" valign="top"><a id="abc731a5cdd518c8a6cc2f5db6d6894c0" name="abc731a5cdd518c8a6cc2f5db6d6894c0"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>bright</b> {4095}</td></tr>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>bright</b> {<a class="el" href="unit___light__data_8hpp.html#a5b8affe2e0bcd02aae9b3654f6e92415">DEFAULT_BRIGHT</a>}</td></tr>
 <tr class="memdesc:abc731a5cdd518c8a6cc2f5db6d6894c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">ADC reading captured when the sensor was lit (bright reference) <br /></td></tr>
 <tr class="separator:abc731a5cdd518c8a6cc2f5db6d6894c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -161,7 +161,7 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>bright</b> {4095}
 </div><div class="memdoc">
 
 <p>Normalized brightness in 0..100 (%), where 0% = dark reference and 100% = bright reference. </p>
-<dl class="section return"><dt>Returns</dt><dd>NaN only when dark == bright (cannot form a range) </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Normalized brightness 0..100 (%), clamped; NaN when dark == bright </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>dark and bright are stored as the raw ADC values captured during calibration; their magnitudes do not imply polarity. On U021 the photoresistor circuit polarity is board-specific (some revisions yield higher ADC in the dark, others in the light) — <a class="el" href="#aaef919f7454152810e38aced4e86b6a7" title="Normalized brightness in 0..100 (%), where 0% = dark reference and 100% = bright reference.">normalized()</a> handles either polarity and always maps dark to 0% and bright to 100%. </dd></dl>
 
 </div>

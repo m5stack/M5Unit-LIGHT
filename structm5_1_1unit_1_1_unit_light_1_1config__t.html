@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.0.2 git rev:6d734f0</span>
+   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.1.0 git rev:1ddbe92</span>
    </div>
   </td>
  </tr>
@@ -115,16 +115,16 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>start_periodic</b> {t
 <tr class="memdesc:a155993f622da7c4158252ef78ea62c0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start periodic measurement on begin? <br /></td></tr>
 <tr class="separator:a155993f622da7c4158252ef78ea62c0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d231154b356939db39518171c999474" id="r_a3d231154b356939db39518171c999474"><td class="memItemLeft" align="right" valign="top"><a id="a3d231154b356939db39518171c999474" name="a3d231154b356939db39518171c999474"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>interval_ms</b> {50}</td></tr>
-<tr class="memdesc:a3d231154b356939db39518171c999474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sampling interval in milliseconds. <br /></td></tr>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>interval_ms</b> {<a class="el" href="unit___light__data_8hpp.html#a54c25aab84232f64a835adb38e86bde0">light::DEFAULT_INTERVAL_MS</a>}</td></tr>
+<tr class="memdesc:a3d231154b356939db39518171c999474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sampling interval in milliseconds (default <a class="el" href="unit___light__data_8hpp.html#a54c25aab84232f64a835adb38e86bde0" title="Default sampling interval (ms)">light::DEFAULT_INTERVAL_MS</a>) <br /></td></tr>
 <tr class="separator:a3d231154b356939db39518171c999474"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a451c4a7d37c42e6a14593a38a1adbcc1" id="r_a451c4a7d37c42e6a14593a38a1adbcc1"><td class="memItemLeft" align="right" valign="top"><a id="a451c4a7d37c42e6a14593a38a1adbcc1" name="a451c4a7d37c42e6a14593a38a1adbcc1"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>dark</b> {0}</td></tr>
-<tr class="memdesc:a451c4a7d37c42e6a14593a38a1adbcc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dark reference used for normalization (default 0) <br /></td></tr>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>dark</b> {<a class="el" href="unit___light__data_8hpp.html#a7ae5ff826f4a9174a4e6c8c65dfa2cd0">light::DEFAULT_DARK</a>}</td></tr>
+<tr class="memdesc:a451c4a7d37c42e6a14593a38a1adbcc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dark reference used for normalization (default <a class="el" href="unit___light__data_8hpp.html#a7ae5ff826f4a9174a4e6c8c65dfa2cd0" title="Default dark reference (ADC value)">light::DEFAULT_DARK</a>) <br /></td></tr>
 <tr class="separator:a451c4a7d37c42e6a14593a38a1adbcc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae4270c07968ae7381ec220cd02fad86" id="r_aae4270c07968ae7381ec220cd02fad86"><td class="memItemLeft" align="right" valign="top"><a id="aae4270c07968ae7381ec220cd02fad86" name="aae4270c07968ae7381ec220cd02fad86"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>bright</b> {4095}</td></tr>
-<tr class="memdesc:aae4270c07968ae7381ec220cd02fad86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bright reference used for normalization (default 4095 for 12-bit ADC) <br /></td></tr>
+uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>bright</b> {<a class="el" href="unit___light__data_8hpp.html#a5b8affe2e0bcd02aae9b3654f6e92415">light::DEFAULT_BRIGHT</a>}</td></tr>
+<tr class="memdesc:aae4270c07968ae7381ec220cd02fad86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bright reference used for normalization (default <a class="el" href="unit___light__data_8hpp.html#a5b8affe2e0bcd02aae9b3654f6e92415" title="Default bright reference (ADC value, 12-bit full scale)">light::DEFAULT_BRIGHT</a>) <br /></td></tr>
 <tr class="separator:aae4270c07968ae7381ec220cd02fad86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>

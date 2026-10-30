@@ -27,7 +27,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.0.2 git rev:6d734f0</span>
+   <div id="projectname">M5Unit-LIGHT<span id="projectnumber">&#160;0.1.0 git rev:1ddbe92</span>
    </div>
   </td>
  </tr>
@@ -103,10 +103,11 @@ $(function(){initNavTree('unit___light__data_8hpp.html',''); initResizable(true)
 </div><!--header-->
 <div class="contents">
 
-<p>UnitLight (SKU:U021) data types (Data struct)  
+<p>UnitLight (SKU:U021) data types (default values and Data struct)  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
+<code>#include &lt;m5_utility/stl/extension.hpp&gt;</code><br />
 </div>
 <p><a href="unit___light__data_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -124,10 +125,26 @@ Namespaces</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacelight.html">light</a></td></tr>
 <tr class="memdesc:namespacelight"><td class="mdescLeft">&#160;</td><td class="mdescRight">For UnitLight (U021) <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Default values</div></td></tr>
+<tr class="memitem:a54c25aab84232f64a835adb38e86bde0" id="r_a54c25aab84232f64a835adb38e86bde0"><td class="memItemLeft" align="right" valign="top"><a id="a54c25aab84232f64a835adb38e86bde0" name="a54c25aab84232f64a835adb38e86bde0"></a>
+constexpr uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::light::DEFAULT_INTERVAL_MS</b> {50}</td></tr>
+<tr class="memdesc:a54c25aab84232f64a835adb38e86bde0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default sampling interval (ms) <br /></td></tr>
+<tr class="separator:a54c25aab84232f64a835adb38e86bde0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ae5ff826f4a9174a4e6c8c65dfa2cd0" id="r_a7ae5ff826f4a9174a4e6c8c65dfa2cd0"><td class="memItemLeft" align="right" valign="top"><a id="a7ae5ff826f4a9174a4e6c8c65dfa2cd0" name="a7ae5ff826f4a9174a4e6c8c65dfa2cd0"></a>
+constexpr uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::light::DEFAULT_DARK</b> {0}</td></tr>
+<tr class="memdesc:a7ae5ff826f4a9174a4e6c8c65dfa2cd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default dark reference (ADC value) <br /></td></tr>
+<tr class="separator:a7ae5ff826f4a9174a4e6c8c65dfa2cd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b8affe2e0bcd02aae9b3654f6e92415" id="r_a5b8affe2e0bcd02aae9b3654f6e92415"><td class="memItemLeft" align="right" valign="top"><a id="a5b8affe2e0bcd02aae9b3654f6e92415" name="a5b8affe2e0bcd02aae9b3654f6e92415"></a>
+constexpr uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>m5::unit::light::DEFAULT_BRIGHT</b> {4095}</td></tr>
+<tr class="memdesc:a5b8affe2e0bcd02aae9b3654f6e92415"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default bright reference (ADC value, 12-bit full scale) <br /></td></tr>
+<tr class="separator:a5b8affe2e0bcd02aae9b3654f6e92415"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>UnitLight (SKU:U021) data types (Data struct) </p>
-<p>Split out from <a class="el" href="unit___light_8hpp.html" title="UnitLight (SKU:U021) for M5UnitUnified.">unit_Light.hpp</a> so pure formula tests can include it without pulling in M5UnitComponent (which is ESP32-only). Native (SDL) builds link data_test.cpp against these inline definitions. </p>
+<div class="textblock"><p>UnitLight (SKU:U021) data types (default values and Data struct) </p>
+<p>Header-only; does not depend on M5UnitComponent, so it can be included from native (non-ESP32) builds. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
